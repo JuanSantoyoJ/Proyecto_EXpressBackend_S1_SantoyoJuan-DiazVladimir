@@ -238,38 +238,192 @@ Instala todas las dependencias necesarias con:
 
 npm install
 
-3. Configurar Variables de Entorno
-
-Crea un archivo .env en la raíz del proyecto con el siguiente contenido:
-
-PORT=3000
-MONGO_URI=mongodb://localhost:27017/karenflix
-JWT_SECRET=supersecreto_cambiar
-JWT_EXPIRES_IN=1d
-CORS_ORIGIN=http://localhost:3000
-RATE_LIMIT_WINDOW_MS=60000
-RATE_LIMIT_MAX=100
-
-
-Nota:
-
-MONGO_URI debe apuntar a tu instancia de MongoDB local o en la nube (MongoDB Atlas).
-
-JWT_SECRET debe ser una cadena segura.
-
-4. Iniciar Servidor en Modo Desarrollo
+3. Iniciar Servidor en Modo Desarrollo
 
 Para iniciar el servidor backend con nodemon (si está instalado):
 
 npm run dev
 
-
 Si no, puedes usar:
 
 node src/server.js
 
-5. Acceder a la Aplicación
+4. Acceder a la Aplicación
 
 Backend/API: http://localhost:3000
 
 Frontend (HTML/CSS/JS): Se servirá desde la carpeta /public
+
+```
+## 📋 Documentación Scrum — Sprint 1
+
+Para la gestión ágil del proyecto **KarenFlix**, utilizamos la metodología **Scrum** adaptada a un equipo de dos integrantes.  
+La herramienta elegida para la planificación y seguimiento fue **Trello**, donde estructuramos las **Historias de Usuario (HU)** y las tareas asociadas.  
+
+### 🗂 Tablero en Trello
+El tablero está dividido en las siguientes columnas:
+- **Product Backlog**: Ideas generales y funcionalidades pendientes.
+- **Sprint 1 Backlog**: Historias de Usuario del sprint actual.
+- **In Progress**: Tareas en desarrollo.
+- **Review**: Tareas finalizadas en revisión.
+- **Done**: Tareas completadas.
+
+### 🏃‍♂️ Sprint 1 — Historias de Usuario y Tareas
+
+#### HU 1: Registro de Usuario
+**Título:** Como nuevo usuario, quiero registrarme con un nombre de usuario y contraseña para poder acceder a la aplicación.  
+
+**Descripción:**  
+Permite a nuevos usuarios registrarse con validaciones y almacenamiento seguro de contraseñas.  
+
+**Tareas:**  
+- [x] Implementar la ruta **POST /api/users/register**  
+- [x] Validación de datos con **express-validator**  
+- [x] Hashing de contraseñas con **bcrypt**  
+- [x] Almacenar usuario en **MongoDB** con rol por defecto *user*  
+
+---
+
+#### HU 2: Inicio de Sesión
+**Título:** Como usuario registrado, quiero iniciar sesión de forma segura para obtener un token de acceso y usar las funcionalidades.  
+
+**Descripción:**  
+El inicio de sesión debe generar un **JWT** y permitir autenticación segura.  
+
+**Tareas:**  
+- [x] Implementar la ruta **POST /api/users/login**  
+- [x] Comparar contraseña ingresada con hash en base de datos  
+- [x] Generar **JWT** al autenticar usuario  
+- [x] Retornar **token y rol** en la respuesta  
+
+---
+
+#### HU 3: Autenticación JWT
+**Título:** Como desarrollador, quiero implementar un middleware de autenticación para proteger las rutas de usuario y administrador.  
+
+**Descripción:**  
+Se debe validar el **JWT** en rutas que requieren autenticación.  
+
+**Tareas:**  
+- [x] Crear middleware **auth.js** para verificar JWT  
+- [x] Proteger una ruta de prueba **GET /api/users/profile**  
+
+---
+
+#### HU 4: Gestión de Categorías (Admin)
+**Título:** Como administrador, quiero crear, ver, actualizar y eliminar categorías para organizar las películas.  
+
+**Descripción:**  
+El CRUD de categorías debe ser accesible solo por administradores, excepto la lectura pública.  
+
+**Tareas:**  
+- [x] Rutas CRUD para **/api/categories** (GET, POST, PUT, DELETE)  
+- [x] Middleware para verificar rol de **admin**  
+- [x] Ruta **GET /api/categories** pública  
+
+---
+
+#### HU 5: Documentación con Swagger
+**Título:** Como desarrollador, quiero documentar todos los endpoints del Sprint 1 con Swagger para tener una referencia interactiva del API.  
+
+**Descripción:**  
+Configurar **Swagger** para documentar endpoints y generar documentación interactiva.  
+
+**Tareas:**  
+- [x] Instalar y configurar **swagger-ui-express**  
+- [x] Documentar rutas de Registro, Login y CRUD de Categorías  
+
+---
+
+### 📆 Duración del Sprint  
+- **Inicio:** 15/02/2025  
+- **Fin:** 22/02/2025  
+
+**[Trello](https://trello.com/b/FQubEn5J/expresss1santoyojuandiazvladimir)**
+---
+
+# Planificación y Diseño de la Base de Datos
+
+## Construcción del Modelo Conceptual
+
+El modelo conceptual de **KarenFlix** representa los datos que manejará el sistema y sus relaciones.  
+Con las nuevas entidades definidas, la estructura queda así:
+
+---
+
+### **Entidades y Atributos**
+
+1. **Usuarios**  
+   Representa a las personas que usan la plataforma.  
+   - `id`: Identificador único  
+   - `correo`: Correo electrónico único  
+   - `nombre`: Nombre completo del usuario  
+   - `direccion`: Dirección física del usuario  
+
+2. **Películas**  
+   Representa cada película registrada en la plataforma.  
+   - `id`: Identificador único  
+   - `nombre`: Nombre de la película  
+   - `categoria`: Referencia a la categoría  
+   - `reseña`: Objeto con  
+     - `titulo`: Título de la reseña  
+     - `comentario`: Comentario del usuario  
+     - `calificacion`: Calificación numérica  
+
+3. **Administradores**  
+   Representa a los administradores del sistema.  
+   - `id`: Identificador único  
+   - `correo`: Correo electrónico  
+   - `nombre`: Nombre completo  
+
+4. **Categorías**  
+   Representa las categorías de películas (terror, acción, comedia, etc.).  
+   - `id`: Identificador único  
+   - `nombre`: Nombre de la categoría  
+
+---
+
+### **Relaciones y Cardinalidades**
+
+- Un **Usuario** puede ver muchas **Películas** (1:N)  
+- Una **Película** puede pertenecer a una sola **Categoría** (N:1)  
+- Un **Usuario** puede hacer muchas **Reseñas** sobre **Películas** (1:N)  
+- Un **Administrador** puede gestionar muchas **Películas** y **Categorías** (1:N)  
+
+---
+
+### **Diagrama Conceptual (Entidad-Relación)**
+
+```mermaid
+erDiagram
+    USUARIOS {
+        string id
+        string correo
+        string nombre
+        string direccion
+    }
+
+    PELICULAS {
+        string id
+        string nombre
+        string categoria
+        string reseña.titulo
+        string reseña.comentario
+        int reseña.calificacion
+    }
+
+    ADMINISTRADORES {
+        string id
+        string correo
+        string nombre
+    }
+
+    CATEGORIAS {
+        string id
+        string nombre
+    }
+
+    USUARIOS ||--o{ PELICULAS : "puede reseñar"
+    PELICULAS }o--|| CATEGORIAS : "pertenece a"
+    ADMINISTRADORES ||--o{ PELICULAS : "gestiona"
+    ADMINISTRADORES ||--o{ CATEGORIAS : "gestiona"
