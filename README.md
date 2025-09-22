@@ -546,4 +546,169 @@ erDiagram
     ADMINISTRADORES ||--o{ PELICULAS : "gestiona"
     ADMINISTRADORES ||--o{ CATEGORIAS : "gestiona"
 ```
+## 🗄 Modelo Físico — KarenFlix (MongoDB)
+
+El modelo físico define la implementación en MongoDB usando validaciones de esquema y creación de índices para garantizar consistencia y rendimiento.
+
+---
+
+### 1. Selección de la base de datos
+
+```javascript
+use karenflix
+```
+
+---
+
+### 2. Creación de Colecciones con Validación
+
+#### 📂 Colección: `usuarios`
+
+```javascript
+db.createCollection("usuarios", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["correo", "nombre", "createdAt"],
+      properties: {
+        _id: { bsonType: "objectId" },
+        correo: { bsonType: "string", description: "Correo electrónico único del usuario" },
+        nombre: { bsonType: "string", description: "Nombre completo del usuario" },
+        direccion: { bsonType: "string", description: "Dirección física del usuario" },
+        createdAt: { bsonType: "date", description: "Fecha de registro del usuario" }
+      }
+    }
+  }
+})
+```
+
+**Índice para correo único:**
+```javascript
+db.usuarios.createIndex({ correo: 1 }, { unique: true })
+```
+
+---
+
+#### 📂 Colección: `administradores`
+
+```javascript
+db.createCollection("administradores", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["correo", "nombre"],
+      properties: {
+        _id: { bsonType: "objectId" },
+        correo: { bsonType: "string", description: "Correo del administrador" },
+        nombre: { bsonType: "string", description: "Nombre completo del administrador" }
+      }
+    }
+  }
+})
+```
+
+**Índice para correo único:**
+```javascript
+db.administradores.createIndex({ correo: 1 }, { unique: true })
+```
+
+---
+
+#### 📂 Colección: `categorias`
+
+```javascript
+db.createCollection("categorias", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["nombre"],
+      properties: {
+        _id: { bsonType: "objectId" },
+        nombre: { bsonType: "string", description: "Nombre de la categoría" }
+      }
+    }
+  }
+})
+```
+
+**Índice para nombres de categoría:**
+```javascript
+db.categorias.createIndex({ nombre: 1 }, { unique: true })
+```
+
+---
+
+#### 📂 Colección: `peliculas`
+
+```javascript
+db.createCollection("peliculas", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["nombre", "categoriaId"],
+      properties: {
+        _id: { bsonType: "objectId" },
+        nombre: { bsonType: "string", description: "Nombre de la película" },
+        categoriaId: { bsonType: "objectId", description: "Referencia a la categoría" }
+      }
+    }
+  }
+})
+```
+
+**Índice para búsqueda por categoría:**
+```javascript
+db.peliculas.createIndex({ categoriaId: 1 })
+```
+
+---
+
+#### 📂 Colección: `resenas`
+
+```javascript
+db.createCollection("resenas", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["peliculaId", "usuarioId", "titulo", "calificacion", "fecha"],
+      properties: {
+        _id: { bsonType: "objectId" },
+        peliculaId: { bsonType: "objectId", description: "Referencia a la película" },
+        usuarioId: { bsonType: "objectId", description: "Referencia al usuario" },
+        titulo: { bsonType: "string", description: "Título de la reseña" },
+        comentario: { bsonType: "string", description: "Comentario opcional del usuario" },
+        calificacion: { bsonType: "int", minimum: 1, maximum: 10, description: "Calificación de 1 a 10" },
+        fecha: { bsonType: "date", description: "Fecha de la reseña" }
+      }
+    }
+  }
+})
+```
+
+**Índices para consultas frecuentes:**
+```javascript
+db.resenas.createIndex({ peliculaId: 1 })
+db.resenas.createIndex({ usuarioId: 1 })
+```
+
+---
+
+### 3. Resumen de Índices
+
+| Colección        | Índice            | Tipo       | Propósito                         |
+|------------------|-------------------|-----------|----------------------------------|
+| `usuarios`        | correo            | Único      | Evitar correos duplicados          |
+| `administradores` | correo            | Único      | Evitar correos duplicados          |
+| `categorias`      | nombre            | Único      | Evitar categorías duplicadas       |
+| `peliculas`       | categoriaId       | Normal     | Búsquedas por categoría            |
+| `resenas`         | peliculaId        | Normal     | Consultas por película             |
+| `resenas`         | usuarioId         | Normal     | Consultas por usuario              |
+
+---
+
+### 4. Notas Finales
+
+- Todas las fechas usan tipo `date` para soportar filtros temporales.  
+- Las relaciones entre colecciones se manejan con `ObjectId`.  
+- Los índices mejoran el rendimiento en búsquedas y garantizan unicidad donde es necesario.  
 
