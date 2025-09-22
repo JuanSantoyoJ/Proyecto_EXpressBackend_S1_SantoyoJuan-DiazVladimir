@@ -407,9 +407,9 @@ erDiagram
         string id
         string nombre
         string categoria
-        string reseña.titulo
-        string reseña.comentario
-        int reseña.calificacion
+        string resena_titulo
+        string resena_comentario
+        int resena_calificacion
     }
 
     ADMINISTRADORES {
@@ -423,7 +423,9 @@ erDiagram
         string nombre
     }
 
-    USUARIOS ||--o{ PELICULAS : "puede reseñar"
-    PELICULAS }o--|| CATEGORIAS : "pertenece a"
+    USUARIOS ||--o{ PELICULAS : "puede_resenar"
+    CATEGORIAS ||--o{ PELICULAS : "contiene"
     ADMINISTRADORES ||--o{ PELICULAS : "gestiona"
     ADMINISTRADORES ||--o{ CATEGORIAS : "gestiona"
+```
+
