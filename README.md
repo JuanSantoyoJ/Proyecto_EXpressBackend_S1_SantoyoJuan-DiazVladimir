@@ -429,3 +429,109 @@ erDiagram
     ADMINISTRADORES ||--o{ CATEGORIAS : "gestiona"
 ```
 
+## 🗄 Modelo Lógico — KarenFlix (MongoDB)
+
+En esta fase convertimos el **modelo conceptual** a un diseño **lógico** para MongoDB, definiendo las colecciones, sus campos y relaciones usando **ObjectId** cuando sea necesario.
+
+---
+
+### 📦 Colecciones y Documentos
+
+#### 1. `usuarios`
+```javascript
+{
+    _id: ObjectId,
+    correo: String,        // único
+    nombre: String,
+    direccion: String,
+    createdAt: Date
+}
+```
+
+---
+
+#### 2. `peliculas`
+```javascript
+{
+    _id: ObjectId,
+    nombre: String,
+    categoriaId: ObjectId,   // referencia a categorias._id
+    resenas: [
+        {
+            usuarioId: ObjectId,  // referencia a usuarios._id
+            titulo: String,
+            comentario: String,
+            calificacion: Number, // 1 a 10
+            fecha: Date
+        }
+    ]
+}
+```
+> Se usa un arreglo embebido para reseñas, ya que normalmente se consultan junto con la película.
+
+---
+
+#### 3. `administradores`
+```javascript
+{
+    _id: ObjectId,
+    correo: String,
+    nombre: String
+}
+```
+> Se maneja separado de usuarios para roles especiales de gestión.
+
+---
+
+#### 4. `categorias`
+```javascript
+{
+    _id: ObjectId,
+    nombre: String
+}
+```
+
+---
+
+### 🔗 Relaciones en el Modelo Lógico
+- **usuarios → peliculas.resenas.usuarioId** : 1 usuario puede hacer varias reseñas  
+- **categorias → peliculas.categoriaId** : una categoría puede tener muchas películas  
+- **administradores** gestiona categorías y películas (CRUD)  
+
+---
+
+### 📊 Diagrama del Modelo Lógico (Simplificado)
+
+```mermaid
+erDiagram
+    USUARIOS {
+        string id
+        string correo
+        string nombre
+        string direccion
+    }
+
+    ADMINISTRADORES {
+        string id
+        string correo
+        string nombre
+    }
+
+    CATEGORIAS {
+        string id
+        string nombre
+    }
+
+    PELICULAS {
+        string id
+        string nombre
+        string categoriaId
+        array resenas
+    }
+
+    USUARIOS ||--o{ PELICULAS : "hace_resenas"
+    CATEGORIAS ||--o{ PELICULAS : "contiene"
+    ADMINISTRADORES ||--o{ PELICULAS : "gestiona"
+    ADMINISTRADORES ||--o{ CATEGORIAS : "gestiona"
+```
+
