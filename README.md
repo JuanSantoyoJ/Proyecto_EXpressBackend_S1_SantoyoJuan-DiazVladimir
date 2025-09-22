@@ -189,7 +189,7 @@ Quedan fuera del alcance:
 ### 5. Tecnologías Clave
 - **Backend:** Node.js, Express, MongoDB, JWT, bcrypt, express-validator.  
 - **Frontend:** HTML5, CSS3, JavaScript (ES6+).  
-- **Seguridad:** Passport-JWT, express-rate-limit, Helmet.  
+- **Seguridad:** Passport-JWT, express-rate-limit.  
 - **Documentación:** Swagger-UI-Express.  
 
 ---
