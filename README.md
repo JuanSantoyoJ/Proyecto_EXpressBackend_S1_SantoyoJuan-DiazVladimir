@@ -505,31 +505,43 @@ En esta fase convertimos el **modelo conceptual** a un diseño **lógico** para 
 ```mermaid
 erDiagram
     USUARIOS {
-        string id
+        string _id
         string correo
         string nombre
         string direccion
+        date createdAt
     }
 
     ADMINISTRADORES {
-        string id
+        string _id
         string correo
         string nombre
     }
 
     CATEGORIAS {
-        string id
+        string _id
         string nombre
     }
 
     PELICULAS {
-        string id
+        string _id
         string nombre
         string categoriaId
-        array resenas
     }
 
-    USUARIOS ||--o{ PELICULAS : "hace_resenas"
+    RESENAS {
+        string _id
+        string peliculaId
+        string usuarioId
+        string titulo
+        string comentario
+        int calificacion
+        date fecha
+    }
+
+    %% Relaciones principales
+    USUARIOS ||--o{ RESENAS : "escribe"
+    PELICULAS ||--o{ RESENAS : "tiene"
     CATEGORIAS ||--o{ PELICULAS : "contiene"
     ADMINISTRADORES ||--o{ PELICULAS : "gestiona"
     ADMINISTRADORES ||--o{ CATEGORIAS : "gestiona"
