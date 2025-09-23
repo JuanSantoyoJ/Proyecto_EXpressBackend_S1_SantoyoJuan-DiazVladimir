@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { getDB } from "../db.js";
 
+// 🔹 Crear usuario
 export async function createUser({ correo, nombre, direccion = "", rol = "usuario" }) {
     const db = getDB();
 

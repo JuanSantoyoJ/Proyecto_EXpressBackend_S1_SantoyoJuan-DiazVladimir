@@ -2,7 +2,8 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import { getDB } from "./db.js";
-import usersRoutes from "./routes/usersRoutes.js"; // 👈 nombre camelCase
+import usersRoutes from "./routes/usersRoutes.js";
+import categoriesRoutes from "./routes/categoriesRoutes.js";
 
 dotenv.config();
 
@@ -13,6 +14,9 @@ app.use(cors({ origin: ORIGIN }));
 app.use(express.json());
 
 app.use(usersRoutes);
+app.use(categoriesRoutes);
+
+// Ruta de salud
 
 app.get("/health", (req, res) => {
   try {
