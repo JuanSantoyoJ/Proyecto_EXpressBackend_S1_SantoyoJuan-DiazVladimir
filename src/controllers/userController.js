@@ -1,24 +1,25 @@
-import { createUser, getAllUsers, updateUser, deleteUser} from "../models/userModel.js";
+import { createUser, getAllUsers, updateUser, deleteUser } from "../models/userModel.js";
 
 // 🔹 Crear usuarios
 export async function createUserController(req, res) {
     try {
-        const { correo, nombre, direccion } = req.body;
+        const { correo, nombre, direccion, rol } = req.body;
 
         if (!correo || !nombre) {
             return res.status(400).json({ error: "Correo y nombre son obligatorios" });
         }
 
-        const user = await createUser({ correo, nombre, direccion });
+        const user = await createUser({ correo, nombre, direccion, rol });
         return res.status(201).json(user);
     } catch (error) {
-        if (error.message === "El correo ya está registrado") {
+        if (error.message === "El correo ya está registrado" || error.message.includes("Rol inválido")) {
             return res.status(400).json({ error: error.message });
         }
         console.error("Error en createUserController:", error);
         return res.status(500).json({ error: "Error interno del servidor" });
     }
 }
+
 
 // 🔹 Obtener todos los usuarios
 export async function getAllUsersController(req, res) {

@@ -1,26 +1,25 @@
 import { ObjectId } from "mongodb";
 import { getDB } from "../db.js";
 
-export async function createUser({ correo, nombre, direccion = "" }) {
+export async function createUser({ correo, nombre, direccion = "", rol = "usuario" }) {
     const db = getDB();
 
-    // 🔹 Verificar si el correo ya existe
+    // Validar rol
+    const rolesPermitidos = ["usuario", "administrador"];
+    if (!rolesPermitidos.includes(rol)) {
+        throw new Error("Rol inválido. Solo 'usuario' o 'administrador'");
+    }
+
     const existingUser = await db.collection("usuarios").findOne({ correo });
     if (existingUser) {
         throw new Error("El correo ya está registrado");
     }
 
-    // 🔹 Documento a insertar
-    const doc = {
-        correo,
-        nombre,
-        direccion,
-        createdAt: new Date(),
-    };
-
+    const doc = { correo, nombre, direccion, rol, createdAt: new Date() };
     const { insertedId } = await db.collection("usuarios").insertOne(doc);
     return { _id: insertedId, ...doc };
 }
+
 
 // 🔹 Obtener todos los usuarios
 export async function getAllUsers() {
