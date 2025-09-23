@@ -15,7 +15,7 @@ export async function connectDB() {
     const uriDB = client.db().databaseName || process.env.DB_NAME;
     db = client.db(uriDB);
 
-    console.log(`✅ Conectado a MongoDB en la base: ${db.databaseName}`);
+    console.log(`✅ MongoDB On Fire 🔥: ${db.databaseName}`);
     return db;
   } catch (error) {
     console.error("❌ Error al conectar a MongoDB:", error);
