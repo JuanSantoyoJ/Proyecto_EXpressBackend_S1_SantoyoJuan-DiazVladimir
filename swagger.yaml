@@ -1,0 +1,445 @@
+openapi: 3.0.0
+info:
+  title: KarenFlix API
+  description: API para gestionar usuarios, categorías, películas y reseñas con autenticación JWT y roles.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Servidor local
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Usuario:
+      type: object
+      properties:
+        _id:
+          type: string
+        correo:
+          type: string
+        nombre:
+          type: string
+        direccion:
+          type: string
+        rol:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Categoria:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre:
+          type: string
+        descripcion:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Pelicula:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre:
+          type: string
+        categoriaId:
+          type: string
+        portada:
+          type: string
+        descripcion:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Resena:
+      type: object
+      properties:
+        _id:
+          type: string
+        peliculaId:
+          type: string
+        usuarioId:
+          type: string
+        titulo:
+          type: string
+        comentario:
+          type: string
+        calificacion:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+security:
+  - BearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      summary: Login de usuario
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                correo:
+                  type: string
+                contraseña:
+                  type: string
+      responses:
+        "200":
+          description: Token JWT
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+
+  /users:
+    post:
+      summary: Crear usuario
+      tags: [Usuarios]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                correo:
+                  type: string
+                nombre:
+                  type: string
+                direccion:
+                  type: string
+                contraseña:
+                  type: string
+      responses:
+        "201":
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+
+    get:
+      summary: Listar usuarios
+      tags: [Usuarios]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Usuario'
+
+  /users/{id}:
+    put:
+      summary: Actualizar usuario
+      tags: [Usuarios]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                correo:
+                  type: string
+                nombre:
+                  type: string
+                direccion:
+                  type: string
+      responses:
+        "200":
+          description: Usuario actualizado
+
+    delete:
+      summary: Eliminar usuario
+      tags: [Usuarios]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Usuario eliminado
+
+  /categories:
+    get:
+      summary: Listar categorías
+      tags: [Categorías]
+      responses:
+        "200":
+          description: Lista de categorías
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Categoria'
+
+    post:
+      summary: Crear categoría
+      tags: [Categorías]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                descripcion:
+                  type: string
+      responses:
+        "201":
+          description: Categoría creada
+
+  /categories/{id}:
+    put:
+      summary: Actualizar categoría
+      tags: [Categorías]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                descripcion:
+                  type: string
+      responses:
+        "200":
+          description: Categoría actualizada
+
+    delete:
+      summary: Eliminar categoría
+      tags: [Categorías]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Categoría eliminada
+
+  /movies:
+    get:
+      summary: Listar películas
+      tags: [Películas]
+      responses:
+        "200":
+          description: Lista de películas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pelicula'
+
+    post:
+      summary: Crear película
+      tags: [Películas]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                categoriaId:
+                  type: string
+                portada:
+                  type: string
+                descripcion:
+                  type: string
+      responses:
+        "201":
+          description: Película creada
+
+  /movies/{id}:
+    put:
+      summary: Actualizar película
+      tags: [Películas]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                descripcion:
+                  type: string
+      responses:
+        "200":
+          description: Película actualizada
+
+    delete:
+      summary: Eliminar película
+      tags: [Películas]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Película eliminada
+
+  /reviews/{peliculaId}:
+    get:
+      summary: Listar reseñas por película
+      tags: [Reseñas]
+      parameters:
+        - name: peliculaId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de reseñas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Resena'
+
+  /reviews:
+    post:
+      summary: Crear reseña
+      tags: [Reseñas]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                peliculaId:
+                  type: string
+                usuarioId:
+                  type: string
+                titulo:
+                  type: string
+                comentario:
+                  type: string
+                calificacion:
+                  type: integer
+      responses:
+        "201":
+          description: Reseña creada
+
+  /reviews/{id}:
+    put:
+      summary: Actualizar reseña
+      tags: [Reseñas]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                titulo:
+                  type: string
+                comentario:
+                  type: string
+                calificacion:
+                  type: integer
+      responses:
+        "200":
+          description: Reseña actualizada
+
+    delete:
+      summary: Eliminar reseña
+      tags: [Reseñas]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Reseña eliminada

@@ -1,24 +1,29 @@
 import { ObjectId } from "mongodb";
+import bcrypt from "bcrypt";
 import { getDB } from "../db.js";
 
 // 🔹 Crear usuario
-export async function createUser({ correo, nombre, direccion = "", rol = "usuario" }) {
+export async function createUser({ correo, nombre, direccion = "", rol = "usuario", contraseña }) {
     const db = getDB();
 
-    // Validar rol
+    // Validar roles permitidos
     const rolesPermitidos = ["usuario", "administrador"];
     if (!rolesPermitidos.includes(rol)) {
         throw new Error("Rol inválido. Solo 'usuario' o 'administrador'");
     }
 
+    // Verificar si el correo ya existe
     const existingUser = await db.collection("usuarios").findOne({ correo });
     if (existingUser) {
         throw new Error("El correo ya está registrado");
     }
 
-    const doc = { correo, nombre, direccion, rol, createdAt: new Date() };
+    // Encriptar contraseña
+    const hashedPassword = await bcrypt.hash(contraseña, 10);
+
+    const doc = { correo, nombre, direccion, rol, contraseña: hashedPassword, createdAt: new Date() };
     const { insertedId } = await db.collection("usuarios").insertOne(doc);
-    return { _id: insertedId, ...doc };
+    return { _id: insertedId, correo, nombre, direccion, rol, createdAt: doc.createdAt };
 }
 
 
