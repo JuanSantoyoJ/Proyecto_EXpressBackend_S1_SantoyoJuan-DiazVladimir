@@ -9,10 +9,12 @@ import {
 // Crear categoría
 export async function createCategoryController(req, res) {
   try {
-    const { nombre } = req.body;
-    if (!nombre) return res.status(400).json({ error: "El nombre es obligatorio" });
+    const { nombre, descripcion } = req.body;
+    if (!nombre || !descripcion) {
+      return res.status(400).json({ error: "Nombre y descripción son obligatorios" });
+    }
 
-    const category = await createCategory({ nombre });
+    const category = await createCategory({ nombre, descripcion });
     res.status(201).json(category);
   } catch (error) {
     if (error.message === "La categoría ya existe") {

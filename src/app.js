@@ -4,6 +4,8 @@ import cors from "cors";
 import { getDB } from "./db.js";
 import usersRoutes from "./routes/usersRoutes.js";
 import categoriesRoutes from "./routes/categoriesRoutes.js";
+import moviesRoutes from "./routes/moviesRoutes.js";
+import reviewsRoutes from "./routes/reviewsRoutes.js";
 
 dotenv.config();
 
@@ -15,6 +17,8 @@ app.use(express.json());
 
 app.use(usersRoutes);
 app.use(categoriesRoutes);
+app.use(moviesRoutes);
+app.use(reviewsRoutes);
 
 // Ruta de salud
 

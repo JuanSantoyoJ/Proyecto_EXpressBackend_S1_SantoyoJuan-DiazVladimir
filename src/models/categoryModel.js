@@ -3,16 +3,15 @@ import { getDB } from "../db.js";
 import { ObjectId } from "mongodb";
 
 // Crear categoría
-export async function createCategory({ nombre }) {
+export async function createCategory({ nombre, descripcion }) {
   const db = getDB();
 
-  // Verificar que no exista duplicada
   const existing = await db.collection("categorias").findOne({ nombre });
   if (existing) {
     throw new Error("La categoría ya existe");
   }
 
-  const doc = { nombre, createdAt: new Date() };
+  const doc = { nombre, descripcion, createdAt: new Date() };
   const { insertedId } = await db.collection("categorias").insertOne(doc);
   return { _id: insertedId, ...doc };
 }
