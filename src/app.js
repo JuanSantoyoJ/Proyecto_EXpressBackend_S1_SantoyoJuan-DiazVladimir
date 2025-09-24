@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { swaggerDocs } from "../swagger.js";
+import { swaggerDocs } from "./swagger.js";
 import { getDB } from "./db.js";
 import authRoutes from "./routes/authRoutes.js";
 import usersRoutes from "./routes/usersRoutes.js";
@@ -26,6 +26,9 @@ app.use(moviesRoutes);
 app.use(reviewsRoutes);
 
 swaggerDocs(app);
+
+
+
 
 // Ruta de salud
 

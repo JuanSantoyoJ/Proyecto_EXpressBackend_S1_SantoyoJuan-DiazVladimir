@@ -3,25 +3,28 @@ import bcrypt from "bcrypt";
 import { getDB } from "../db.js";
 
 // 🔹 Crear usuario
-export async function createUser({ correo, nombre, direccion = "", rol = "usuario", contraseña }) {
+export async function createUser({ correo, nombre, direccion = "", rol = "usuario", contrasena }) {
     const db = getDB();
 
-    // Validar roles permitidos
+    // ✅ Verificar datos antes de encriptar
+    if (!contrasena || typeof contrasena !== "string") {
+        throw new Error("La contraseña es obligatoria y debe ser texto");
+    }
+
     const rolesPermitidos = ["usuario", "administrador"];
     if (!rolesPermitidos.includes(rol)) {
         throw new Error("Rol inválido. Solo 'usuario' o 'administrador'");
     }
 
-    // Verificar si el correo ya existe
     const existingUser = await db.collection("usuarios").findOne({ correo });
     if (existingUser) {
         throw new Error("El correo ya está registrado");
     }
 
-    // Encriptar contraseña
-    const hashedPassword = await bcrypt.hash(contraseña, 10);
+    // ✅ Encriptar contraseña
+    const hashedPassword = await bcrypt.hash(contrasena, 10);
 
-    const doc = { correo, nombre, direccion, rol, contraseña: hashedPassword, createdAt: new Date() };
+    const doc = { correo, nombre, direccion, rol, contrasena: hashedPassword, createdAt: new Date() };
     const { insertedId } = await db.collection("usuarios").insertOne(doc);
     return { _id: insertedId, correo, nombre, direccion, rol, createdAt: doc.createdAt };
 }

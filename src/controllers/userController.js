@@ -3,14 +3,19 @@ import { createUser, getAllUsers, updateUser, deleteUser } from "../models/userM
 // 🔹 Crear usuarios
 export async function createUserController(req, res) {
     try {
-        const { correo, nombre, direccion, rol, contraseña } = req.body;
+        const { correo, nombre, direccion, rol, contrasena } = req.body;
 
-        if (!correo || !nombre) {
-            return res.status(400).json({ error: "Correo, nombre y contraseña son obligatorios" });
+        // ✅ Validación de datos obligatorios
+        if (!correo || !nombre || !contrasena) {
+            return res.status(400).json({
+                error: "Correo, nombre y contraseña son requeridos"
+            });
         }
 
-        const user = await createUser({ correo, nombre, direccion, rol, contraseña });
+        // ✅ Llamar al modelo para crear usuario
+        const user = await createUser({ correo, nombre, direccion, rol, contrasena });
         return res.status(201).json(user);
+
     } catch (error) {
         if (error.message === "El correo ya está registrado" || error.message.includes("Rol inválido")) {
             return res.status(400).json({ error: error.message });

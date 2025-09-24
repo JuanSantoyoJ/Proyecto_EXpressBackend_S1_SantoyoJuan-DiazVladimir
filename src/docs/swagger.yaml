@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: KarenFlix API
-  description: API para gestionar usuarios, categorías, películas y reseñas con autenticación JWT y roles.
+  description: API para gestionar usuarios, categorías, películas y resenas con autenticación JWT y roles.
   version: 1.0.0
 servers:
   - url: http://localhost:3000
@@ -98,7 +98,7 @@ paths:
               properties:
                 correo:
                   type: string
-                contraseña:
+                contrasena:
                   type: string
       responses:
         "200":
@@ -128,7 +128,7 @@ paths:
                   type: string
                 direccion:
                   type: string
-                contraseña:
+                contrasena:
                   type: string
       responses:
         "201":
@@ -355,8 +355,8 @@ paths:
 
   /reviews/{peliculaId}:
     get:
-      summary: Listar reseñas por película
-      tags: [Reseñas]
+      summary: Listar resenas por película
+      tags: [Resenas]
       parameters:
         - name: peliculaId
           in: path
@@ -365,7 +365,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Lista de reseñas
+          description: Lista de resenas
           content:
             application/json:
               schema:
@@ -375,8 +375,8 @@ paths:
 
   /reviews:
     post:
-      summary: Crear reseña
-      tags: [Reseñas]
+      summary: Crear resena
+      tags: [Resenas]
       security:
         - BearerAuth: []
       requestBody:
@@ -398,12 +398,12 @@ paths:
                   type: integer
       responses:
         "201":
-          description: Reseña creada
+          description: Resena creada
 
   /reviews/{id}:
     put:
-      summary: Actualizar reseña
-      tags: [Reseñas]
+      summary: Actualizar resena
+      tags: [Resenas]
       security:
         - BearerAuth: []
       parameters:
@@ -427,11 +427,11 @@ paths:
                   type: integer
       responses:
         "200":
-          description: Reseña actualizada
+          description: Resena actualizada
 
     delete:
-      summary: Eliminar reseña
-      tags: [Reseñas]
+      summary: Eliminar resena
+      tags: [Resenas]
       security:
         - BearerAuth: []
       parameters:
@@ -442,4 +442,4 @@ paths:
             type: string
       responses:
         "200":
-          description: Reseña eliminada
+          description: Resena eliminada
