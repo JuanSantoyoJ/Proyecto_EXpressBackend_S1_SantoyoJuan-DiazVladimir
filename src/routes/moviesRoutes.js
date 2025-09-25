@@ -8,13 +8,46 @@ import {
 } from "../controllers/movieController.js";
 import { checkRole } from "../middlewares/roleMiddleware.js";
 import { verifyToken } from "../middlewares/authMiddleware.js";
+import { validarCampos } from "../middlewares/validationMiddleware.js";
+import {
+  validarCrearPelicula,
+  validarActualizarPelicula,
+  validarEliminarPelicula
+} from "../validators/movieValidators.js";
 
 const router = Router();
 
-// Solo admins pueden crear, actualizar y borrar
-router.post("/movies",verifyToken, checkRole(["administrador"]), createMovieController);
+// ✅ Crear película (solo admin)
+router.post(
+  "/movies",
+  verifyToken,
+  checkRole(["administrador"]),
+  validarCrearPelicula,
+  validarCampos,
+  createMovieController
+);
+
+// ✅ Obtener todas las películas (público)
 router.get("/movies", getAllMoviesController);
-router.put("/movies/:id",verifyToken, checkRole(["administrador"]), updateMovieController);
-router.delete("/movies/:id",verifyToken, checkRole(["administrador"]), deleteMovieController);
+
+// ✅ Actualizar película (solo admin)
+router.put(
+  "/movies/:id",
+  verifyToken,
+  checkRole(["administrador"]),
+  validarActualizarPelicula,
+  validarCampos,
+  updateMovieController
+);
+
+// ✅ Eliminar película (solo admin)
+router.delete(
+  "/movies/:id",
+  verifyToken,
+  checkRole(["administrador"]),
+  validarEliminarPelicula,
+  validarCampos,
+  deleteMovieController
+);
 
 export default router;

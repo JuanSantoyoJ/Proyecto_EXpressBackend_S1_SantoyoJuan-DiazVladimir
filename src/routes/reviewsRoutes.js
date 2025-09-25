@@ -8,15 +8,44 @@ import {
 } from "../controllers/reviewController.js";
 import { checkRole } from "../middlewares/roleMiddleware.js";
 import { verifyToken } from "../middlewares/authMiddleware.js";
+import { validarCampos } from "../middlewares/validationMiddleware.js";
+
+import {
+  validarCrearResena,
+  validarActualizarResena,
+  validarEliminarResena
+} from "../validators/reviewValidators.js";
 
 const router = Router();
 
-// Cualquiera puede ver reseñas
+// ✅ Crear reseña (cualquier usuario autenticado)
+router.post(
+  "/reviews",
+  verifyToken,
+  validarCrearResena,
+  validarCampos,
+  createReviewController
+);
+
+// ✅ Obtener reseñas de una película (público)
 router.get("/reviews/:peliculaId", getReviewsByMovieController);
 
-// Solo usuarios autenticados pueden crear, actualizar y borrar
-router.post("/reviews",verifyToken, checkRole(["usuario", "administrador"]), createReviewController);
-router.put("/reviews/:id",verifyToken, checkRole(["usuario", "administrador"]), updateReviewController);
-router.delete("/reviews/:id",verifyToken, checkRole(["usuario", "administrador"]), deleteReviewController);
+// ✅ Actualizar reseña (solo el usuario dueño de la reseña)
+router.put(
+  "/reviews/:id",
+  verifyToken,
+  validarActualizarResena,
+  validarCampos,
+  updateReviewController
+);
+
+// ✅ Eliminar reseña (solo el usuario dueño de la reseña)
+router.delete(
+  "/reviews/:id",
+  verifyToken,
+  validarEliminarResena,
+  validarCampos,
+  deleteReviewController
+);
 
 export default router;

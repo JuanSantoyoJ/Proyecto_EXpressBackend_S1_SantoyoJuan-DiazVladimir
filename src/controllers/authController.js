@@ -25,7 +25,7 @@ export async function loginController(req, res) {
         const token = jwt.sign(
             { id: user._id, rol: user.rol },
             SECRET_KEY,
-            { expiresIn: "20m" }
+            { expiresIn: "1h" }
         );
 
         res.json({ token });
@@ -34,5 +34,3 @@ export async function loginController(req, res) {
         res.status(500).json({ error: "Error interno del servidor" });
     }
 }
-//hola 
-sdghjlñ
