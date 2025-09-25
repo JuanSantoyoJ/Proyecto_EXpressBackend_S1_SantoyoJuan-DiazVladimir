@@ -8,13 +8,13 @@
 
 <h3 align="center";>
 
-**Juan Santoyo**
+**Juan David Santoyo**
 
 </h3>
 
 <h3 align="center";>
 
-**Vladimir Diaz**
+**Vladimir Diaz Contreras**
 
 </h3>
 
