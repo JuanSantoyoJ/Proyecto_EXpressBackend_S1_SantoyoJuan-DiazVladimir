@@ -8,6 +8,9 @@ import {
 } from "../controllers/userController.js";
 import { verifyToken } from "../middlewares/authMiddleware.js";
 import { checkRole } from "../middlewares/roleMiddleware.js";
+import { validarCampos } from "../middlewares/validationMiddleware.js";
+import { validarCrearUsuario, validarActualizarUsuario, validarEliminarUsuario } from "../validators/userValidators.js";
+
 
 const router = Router();
 
@@ -18,12 +21,12 @@ const router = Router();
 router.post("/users", (req, res, next) => {
   req.body.rol = "usuario";
   next();
-}, createUserController);
+}, validarCrearUsuario, validarCampos, createUserController);
 
 // Solo admin puede ver/editar/eliminar usuarios
 router.get("/users", verifyToken, checkRole(["administrador"]), getAllUsersController);
-router.put("/users/:id", verifyToken, checkRole(["administrador"]), updateUserController);
-router.delete("/users/:id", verifyToken, checkRole(["administrador"]), deleteUserController);
+router.put("/users/:id", verifyToken, validarActualizarUsuario, validarCampos, checkRole(["administrador"]), updateUserController);
+router.delete("/users/:id", verifyToken, validarEliminarUsuario, validarCampos, checkRole(["administrador"]), deleteUserController);
 
 // Crea administrador
 router.post("/users/admin", checkRole(["administrador"]), createUserController);

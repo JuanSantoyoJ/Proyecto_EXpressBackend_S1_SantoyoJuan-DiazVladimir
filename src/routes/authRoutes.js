@@ -1,10 +1,11 @@
-// src/routes/authRoutes.js
-import { Router } from "express";
+import express from "express";
 import { loginController } from "../controllers/authController.js";
+import { validarLoginUsuario } from "../validators/userValidators.js";
+import { validarCampos } from "../middlewares/validationMiddleware.js";
 
-const router = Router();
+const router = express.Router();
 
-// Público: devuelve { token }
-router.post("/auth/login", loginController);
+// Login
+router.post("/auth/login", validarLoginUsuario, validarCampos, loginController);
 
 export default router;

@@ -41,13 +41,20 @@ export async function getAllUsersController(req, res) {
 export async function updateUserController(req, res) {
     try {
         const { id } = req.params;
-        const { correo, nombre, direccion } = req.body;
+        const { correo, nombre, direccion, rol } = req.body;
 
-        if (!correo || !nombre) {
-            return res.status(400).json({ error: "Correo y nombre son obligatorios" });
+        // Solo agregamos al objeto los campos realmente enviados
+        const camposActualizar = {};
+        if (correo !== undefined && correo !== null && correo !== "") camposActualizar.correo = correo;
+        if (nombre !== undefined && nombre !== null && nombre !== "") camposActualizar.nombre = nombre;
+        if (direccion !== undefined && direccion !== null && direccion !== "") camposActualizar.direccion = direccion;
+        if (rol !== undefined && rol !== null && rol !== "") camposActualizar.rol = rol;
+
+        if (Object.keys(camposActualizar).length === 0) {
+            return res.status(400).json({ error: "No hay datos para actualizar" });
         }
 
-        const result = await updateUser(id, { correo, nombre, direccion });
+        const result = await updateUser(id, camposActualizar);
         return res.json(result);
     } catch (error) {
         if (error.message === "ID inválido") {
@@ -60,6 +67,7 @@ export async function updateUserController(req, res) {
         return res.status(500).json({ error: "Error interno del servidor" });
     }
 }
+
 
 // 🔹 Eliminar usuario
 export async function deleteUserController(req, res) {

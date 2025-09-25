@@ -37,17 +37,17 @@ export async function getAllUsers() {
 }
 
 // 🔹 Actualizar usuario por ID
-export async function updateUser(id, { correo, nombre, direccion }) {
+export async function updateUser(id, data) {
     const db = getDB();
 
-    // Validar ID
     if (!ObjectId.isValid(id)) {
         throw new Error("ID inválido");
     }
 
+    // Aquí ya solo llega lo que filtramos antes
     const result = await db.collection("usuarios").updateOne(
         { _id: new ObjectId(id) },
-        { $set: { correo, nombre, direccion } }
+        { $set: data }
     );
 
     if (result.matchedCount === 0) {
@@ -56,6 +56,8 @@ export async function updateUser(id, { correo, nombre, direccion }) {
 
     return { message: "Usuario actualizado correctamente" };
 }
+
+
 
 
 // 🔹 Eliminar usuario por ID
