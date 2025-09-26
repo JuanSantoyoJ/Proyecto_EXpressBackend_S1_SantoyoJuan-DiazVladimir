@@ -15,12 +15,13 @@ export function swaggerDocs(app) {
         res.json(swaggerDocument);
     });
 
-    // URL absoluta para producción
-    const swaggerURL = process.env.NODE_ENV === "production"
-        ? "https://proyecto-ex-press-backend-s1-santoyo-juan-diaz-vladi-apot6vzau.vercel.app/swagger.json"
-        : "/swagger.json";
+    // URL para swagger.json
+    const swaggerURL =
+        process.env.NODE_ENV === "production"
+            ? "/swagger.json"
+            : "/swagger.json";
 
-    // Servimos Swagger UI
+    // Swagger UI
     app.use(
         "/api-docs",
         swaggerUi.serve,
@@ -33,5 +34,5 @@ export function swaggerDocs(app) {
         })
     );
 
-    console.log(`📄 Documentación en /api-docs`);
+    console.log("📄 Documentación en /api-docs");
 }
