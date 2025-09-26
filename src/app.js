@@ -9,54 +9,47 @@ import categoriesRoutes from "./routes/categoriesRoutes.js";
 import moviesRoutes from "./routes/moviesRoutes.js";
 import reviewsRoutes from "./routes/reviewsRoutes.js";
 
-
 dotenv.config();
 
 const app = express();
 
+// 1️⃣ Configuración de CORS
 const ORIGIN = process.env.CORS_ORIGIN || "*";
 const ALLOWED_ORIGINS = ORIGIN.split(",").map(s => s.trim());
 
 app.use(
   cors({
     origin: (origin, cb) => {
-      // Permite sin origen (Swagger UI local, cURL, Postman)
-      if (!origin) return cb(null, true);
-
-      // Verifica si está en la lista de orígenes permitidos
+      if (!origin) return cb(null, true); // Permitir Swagger y herramientas locales
       if (ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes("*")) {
         return cb(null, true);
       }
-
       return cb(new Error("CORS bloqueado: " + origin));
     },
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true, // Necesario para Authorization con Bearer
-    preflightContinue: false,
-    optionsSuccessStatus: 204
+    credentials: true,
+    optionsSuccessStatus: 204 // Evita errores con preflight
   })
 );
 
-// Asegura que OPTIONS funcione correctamente
-app.options("*", cors());
+// No usamos app.options("*") porque Express 5 ya no lo soporta
+// y cors() maneja preflight automáticamente
 
-
-
+// 2️⃣ Parseo JSON
 app.use(express.json());
 
+// 3️⃣ Swagger UI
 swaggerDocs(app);
 
+// 4️⃣ Rutas de la API
 app.use(authRoutes);
 app.use(usersRoutes);
 app.use(categoriesRoutes);
 app.use(moviesRoutes);
 app.use(reviewsRoutes);
 
-
-
-// Ruta de salud
-
+// 5️⃣ Ruta de salud
 app.get("/health", (req, res) => {
   try {
     const db = getDB();
