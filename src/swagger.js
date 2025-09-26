@@ -10,25 +10,28 @@ export function swaggerDocs(app) {
     const swaggerPath = path.join(__dirname, "docs", "swagger.yaml");
     const swaggerDocument = YAML.load(swaggerPath);
 
-    // Sirve el JSON directamente
+    // Servimos el JSON
     app.get("/swagger.json", (req, res) => {
-        res.setHeader("Content-Type", "application/json");
-        res.send(swaggerDocument);
+        res.json(swaggerDocument);
     });
 
-    // Sirve la interfaz de Swagger
+    // URL absoluta para producción
+    const swaggerURL = process.env.NODE_ENV === "production"
+        ? "https://proyecto-ex-press-backend-s1-santoyo-juan-diaz-vladi-apot6vzau.vercel.app/swagger.json"
+        : "/swagger.json";
+
+    // Servimos Swagger UI
     app.use(
-        "/api-docs/",
+        "/api-docs",
         swaggerUi.serve,
-        swaggerUi.setup(swaggerDocument, {
-            explorer: true,
+        swaggerUi.setup(null, {
             swaggerOptions: {
-                url: "/swagger.json", // Usa el JSON local para evitar problemas
+                url: swaggerURL,
                 persistAuthorization: true
             },
             customSiteTitle: "KarenFlix API Docs",
         })
     );
 
-    console.log(`📄 Swagger disponible en /api-docs`);
+    console.log(`📄 Documentación en /api-docs`);
 }
