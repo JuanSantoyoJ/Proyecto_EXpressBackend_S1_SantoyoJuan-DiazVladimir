@@ -1,8 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
-import cors from "cors";
 import { swaggerDocs } from "./swagger.js";
 import { getDB } from "./db.js";
+
 import authRoutes from "./routes/authRoutes.js";
 import usersRoutes from "./routes/usersRoutes.js";
 import categoriesRoutes from "./routes/categoriesRoutes.js";
@@ -13,43 +13,37 @@ dotenv.config();
 
 const app = express();
 
-// 1️⃣ Configuración de CORS
+// ===== CONFIGURACIÓN DE CORS =====
 const ORIGIN = process.env.CORS_ORIGIN || "*";
 const ALLOWED_ORIGINS = ORIGIN.split(",").map(s => s.trim());
 
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin) return cb(null, true); // Permitir Swagger y herramientas locales
-      if (ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes("*")) {
-        return cb(null, true);
-      }
-      return cb(new Error("CORS bloqueado: " + origin));
-    },
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-    optionsSuccessStatus: 204 // Evita errores con preflight
-  })
-);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes("*") || ALLOWED_ORIGINS.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin || "*");
+  }
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200); // Preflight
+  }
+  next();
+});
 
-// No usamos app.options("*") porque Express 5 ya no lo soporta
-// y cors() maneja preflight automáticamente
-
-// 2️⃣ Parseo JSON
+// ===== MIDDLEWARES =====
 app.use(express.json());
 
-// 3️⃣ Swagger UI
+// ===== SWAGGER =====
 swaggerDocs(app);
 
-// 4️⃣ Rutas de la API
+// ===== RUTAS =====
 app.use(authRoutes);
 app.use(usersRoutes);
 app.use(categoriesRoutes);
 app.use(moviesRoutes);
 app.use(reviewsRoutes);
 
-// 5️⃣ Ruta de salud
+// ===== SALUD =====
 app.get("/health", (req, res) => {
   try {
     const db = getDB();
