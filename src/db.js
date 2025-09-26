@@ -3,12 +3,13 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+console.log("📂 MONGO_URI desde .env:", uri);
+console.log("📂 DB_NAME desde .env:", dbName);
+
 const uri = process.env.MONGO_URI;
 const dbName = process.env.DB_NAME;
 
 // ⚠️ Solo para pruebas, para ver si Vercel recibe las variables
-console.log("📂 MONGO_URI desde .env:", uri);
-console.log("📂 DB_NAME desde .env:", dbName);
 
 let client;
 let db;
