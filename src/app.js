@@ -27,7 +27,7 @@ app.use(cors({
 
 app.use(express.json());
 
-
+swaggerDocs(app);
 
 app.use(authRoutes);
 app.use(usersRoutes);
@@ -35,7 +35,7 @@ app.use(categoriesRoutes);
 app.use(moviesRoutes);
 app.use(reviewsRoutes);
 
-swaggerDocs(app);
+
 
 
 

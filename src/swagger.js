@@ -19,8 +19,10 @@ export function swaggerDocs(app) {
                 persistAuthorization: true, // Mantiene el token cuando recargas
             },
             customSiteTitle: "KarenFlix API Docs",
+            customfavIcon: "https://swagger.io/favicon-32x32.png",
         })
     );
 
     console.log("📄 Documentación disponible en http://localhost:3000/api-docs");
+    console.log("📄 Documentación disponible en /api-docs");
 }
