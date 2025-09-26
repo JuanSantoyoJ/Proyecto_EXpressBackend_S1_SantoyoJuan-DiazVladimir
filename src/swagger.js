@@ -18,7 +18,7 @@ export function swaggerDocs(app) {
 
     // Sirve la interfaz de Swagger
     app.use(
-        "/api-docs",
+        "/api-docs/",
         swaggerUi.serve,
         swaggerUi.setup(swaggerDocument, {
             explorer: true,

@@ -3,10 +3,12 @@ info:
   title: KarenFlix API
   description: API para la gestión de usuarios, categorías, películas y reseñas con autenticación JWT.
   version: 1.0.0
-servers:
-  - url: https://proyecto-ex-press-backend-s1-santoyo-juan-diaz-vladi-mqivr70wz.vercel.app
-    description: Servidor en producción
 
+servers:
+  - url: https://proyecto-ex-press-backend-s1-santoyo-juan-diaz-vladi-2c5i7510f.vercel.app
+    description: Servidor en producción
+  - url: http://localhost:3000
+    description: Servidor local
 
 tags:
   - name: Autenticación
@@ -23,8 +25,7 @@ tags:
 paths:
   /auth/register:
     post:
-      tags:
-        - Autenticación
+      tags: [Autenticación]
       summary: Registro de usuario
       requestBody:
         required: true
@@ -33,29 +34,20 @@ paths:
             schema:
               type: object
               properties:
-                correo:
-                  type: string
-                nombre:
-                  type: string
-                contrasena:
-                  type: string
+                correo: { type: string }
+                nombre: { type: string }
+                contrasena: { type: string }
                 rol:
                   type: string
                   enum: [usuario, administrador]
-              required:
-                - correo
-                - nombre
-                - contrasena
+              required: [correo, nombre, contrasena]
       responses:
-        "201":
-          description: Usuario registrado con éxito
-        "400":
-          description: Datos inválidos o correo duplicado
+        "201": { description: Usuario registrado con éxito }
+        "400": { description: Datos inválidos o correo duplicado }
 
   /auth/login:
     post:
-      tags:
-        - Autenticación
+      tags: [Autenticación]
       summary: Inicio de sesión
       requestBody:
         required: true
@@ -64,35 +56,25 @@ paths:
             schema:
               type: object
               properties:
-                correo:
-                  type: string
-                contrasena:
-                  type: string
-              required:
-                - correo
-                - contrasena
+                correo: { type: string }
+                contrasena: { type: string }
+              required: [correo, contrasena]
       responses:
-        "200":
-          description: Retorna token JWT
-        "400":
-          description: Credenciales inválidas
+        "200": { description: Retorna token JWT }
+        "400": { description: Credenciales inválidas }
 
   /users:
     get:
-      tags:
-        - Usuarios
+      tags: [Usuarios]
       summary: Obtener todos los usuarios
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       responses:
-        "200":
-          description: Lista de usuarios
+        "200": { description: Lista de usuarios }
+
     post:
-      tags:
-        - Usuarios
+      tags: [Usuarios]
       summary: Crear usuario (admin)
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       requestBody:
         required: true
         content:
@@ -100,34 +82,26 @@ paths:
             schema:
               type: object
               properties:
-                correo:
-                  type: string
-                nombre:
-                  type: string
-                contrasena:
-                  type: string
+                correo: { type: string }
+                nombre: { type: string }
+                contrasena: { type: string }
                 rol:
                   type: string
                   enum: [usuario, administrador]
       responses:
-        "201":
-          description: Usuario creado con éxito
-        "400":
-          description: Datos inválidos
+        "201": { description: Usuario creado con éxito }
+        "400": { description: Datos inválidos }
 
   /users/{id}:
     put:
-      tags:
-        - Usuarios
+      tags: [Usuarios]
       summary: Actualizar usuario
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       requestBody:
         required: true
         content:
@@ -135,49 +109,37 @@ paths:
             schema:
               type: object
               properties:
-                correo:
-                  type: string
-                nombre:
-                  type: string
-                direccion:
-                  type: string
+                correo: { type: string }
+                nombre: { type: string }
+                direccion: { type: string }
       responses:
-        "200":
-          description: Usuario actualizado con éxito
-        "404":
-          description: Usuario no encontrado
+        "200": { description: Usuario actualizado con éxito }
+        "404": { description: Usuario no encontrado }
+
     delete:
-      tags:
-        - Usuarios
+      tags: [Usuarios]
       summary: Eliminar usuario (admin)
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       responses:
-        "200":
-          description: Usuario eliminado
-        "404":
-          description: Usuario no encontrado
+        "200": { description: Usuario eliminado }
+        "404": { description: Usuario no encontrado }
 
   /categories:
     get:
-      tags:
-        - Categorías
+      tags: [Categorías]
       summary: Obtener todas las categorías
       responses:
-        "200":
-          description: Lista de categorías
+        "200": { description: Lista de categorías }
+
     post:
-      tags:
-        - Categorías
+      tags: [Categorías]
       summary: Crear categoría (admin)
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       requestBody:
         required: true
         content:
@@ -185,27 +147,21 @@ paths:
             schema:
               type: object
               properties:
-                nombre:
-                  type: string
-                descripcion:
-                  type: string
+                nombre: { type: string }
+                descripcion: { type: string }
       responses:
-        "201":
-          description: Categoría creada con éxito
+        "201": { description: Categoría creada con éxito }
 
   /categories/{id}:
     put:
-      tags:
-        - Categorías
+      tags: [Categorías]
       summary: Actualizar categoría (admin)
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       requestBody:
         required: true
         content:
@@ -213,43 +169,34 @@ paths:
             schema:
               type: object
               properties:
-                nombre:
-                  type: string
-                descripcion:
-                  type: string
+                nombre: { type: string }
+                descripcion: { type: string }
       responses:
-        "200":
-          description: Categoría actualizada
+        "200": { description: Categoría actualizada }
+
     delete:
-      tags:
-        - Categorías
+      tags: [Categorías]
       summary: Eliminar categoría (admin)
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       responses:
-        "200":
-          description: Categoría eliminada
+        "200": { description: Categoría eliminada }
 
   /movies:
     get:
-      tags:
-        - Películas
+      tags: [Películas]
       summary: Obtener todas las películas
       responses:
-        "200":
-          description: Lista de películas
+        "200": { description: Lista de películas }
+
     post:
-      tags:
-        - Películas
+      tags: [Películas]
       summary: Crear película (admin)
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       requestBody:
         required: true
         content:
@@ -257,29 +204,22 @@ paths:
             schema:
               type: object
               properties:
-                nombre:
-                  type: string
-                categoriaId:
-                  type: string
-                portada:
-                  type: string
+                nombre: { type: string }
+                categoriaId: { type: string }
+                portada: { type: string }
       responses:
-        "201":
-          description: Película creada con éxito
+        "201": { description: Película creada con éxito }
 
   /movies/{id}:
     put:
-      tags:
-        - Películas
+      tags: [Películas]
       summary: Actualizar película (admin)
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       requestBody:
         required: true
         content:
@@ -287,47 +227,36 @@ paths:
             schema:
               type: object
               properties:
-                nombre:
-                  type: string
-                categoriaId:
-                  type: string
-                portada:
-                  type: string
+                nombre: { type: string }
+                categoriaId: { type: string }
+                portada: { type: string }
       responses:
-        "200":
-          description: Película actualizada
+        "200": { description: Película actualizada }
+
     delete:
-      tags:
-        - Películas
+      tags: [Películas]
       summary: Eliminar película (admin)
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       responses:
-        "200":
-          description: Película eliminada
+        "200": { description: Película eliminada }
 
   /reviews:
     get:
-      tags:
-        - Reseñas
+      tags: [Reseñas]
       summary: Obtener todas las reseñas (admin)
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       responses:
-        "200":
-          description: Lista de reseñas
+        "200": { description: Lista de reseñas }
+
     post:
-      tags:
-        - Reseñas
+      tags: [Reseñas]
       summary: Crear reseña (usuario)
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       requestBody:
         required: true
         content:
@@ -335,31 +264,23 @@ paths:
             schema:
               type: object
               properties:
-                peliculaId:
-                  type: string
-                titulo:
-                  type: string
-                comentario:
-                  type: string
-                calificacion:
-                  type: number
+                peliculaId: { type: string }
+                titulo: { type: string }
+                comentario: { type: string }
+                calificacion: { type: number }
       responses:
-        "201":
-          description: Reseña creada con éxito
+        "201": { description: Reseña creada con éxito }
 
   /reviews/{id}:
     put:
-      tags:
-        - Reseñas
+      tags: [Reseñas]
       summary: Actualizar reseña (solo autor)
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       requestBody:
         required: true
         content:
@@ -367,64 +288,49 @@ paths:
             schema:
               type: object
               properties:
-                titulo:
-                  type: string
-                comentario:
-                  type: string
-                calificacion:
-                  type: number
+                titulo: { type: string }
+                comentario: { type: string }
+                calificacion: { type: number }
       responses:
-        "200":
-          description: Reseña actualizada
+        "200": { description: Reseña actualizada }
+
     delete:
-      tags:
-        - Reseñas
+      tags: [Reseñas]
       summary: Eliminar reseña (autor o admin)
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       responses:
-        "200":
-          description: Reseña eliminada
+        "200": { description: Reseña eliminada }
 
   /reviews/{id}/like:
     post:
-      tags:
-        - Reseñas
+      tags: [Reseñas]
       summary: Dar like a reseña
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       responses:
-        "200":
-          description: Like actualizado
+        "200": { description: Like actualizado }
 
   /reviews/{id}/dislike:
     post:
-      tags:
-        - Reseñas
+      tags: [Reseñas]
       summary: Dar dislike a reseña
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       responses:
-        "200":
-          description: Dislike actualizado
+        "200": { description: Dislike actualizado }
 
 components:
   securitySchemes:
