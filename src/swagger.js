@@ -10,19 +10,23 @@ export function swaggerDocs(app) {
     const swaggerPath = path.join(__dirname, "docs", "swagger.yaml");
     const swaggerDocument = YAML.load(swaggerPath);
 
-    // 🚀 La interfaz de Swagger carga sin bloqueo
+    // Endpoint para servir el JSON directamente
+    app.get("/swagger.json", (req, res) => {
+        res.json(swaggerDocument);
+    });
+
+    // Interfaz de Swagger UI
     app.use(
         "/api-docs",
         swaggerUi.serve,
         swaggerUi.setup(swaggerDocument, {
             swaggerOptions: {
-                persistAuthorization: true, // Mantiene el token cuando recargas
+                persistAuthorization: true,
+                url: "/swagger.json", // 👈 Forzamos a usar nuestro endpoint en producción
             },
             customSiteTitle: "KarenFlix API Docs",
-            customfavIcon: "https://swagger.io/favicon-32x32.png",
         })
     );
 
-    console.log("📄 Documentación disponible en http://localhost:3000/api-docs");
-    console.log("📄 Documentación disponible en /api-docs");
+    console.log(`📄 Documentación en http://localhost:3000/api-docs`);
 }
