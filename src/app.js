@@ -14,9 +14,9 @@ dotenv.config();
 
 const app = express();
 const ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
+const ALLOWED_ORIGINS = ORIGIN.split(",").map(s => s.trim());
 
 // Sugerencia: soportar múltiples orígenes separados por coma
-const ALLOWED_ORIGINS = ORIGIN.split(",").map(s => s.trim());
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin) return cb(null, true);           // permitir tools/CLI
@@ -25,7 +25,6 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(cors({ origin: ORIGIN }));
 app.use(express.json());
 
 
