@@ -13,15 +13,24 @@ import reviewsRoutes from "./routes/reviewsRoutes.js";
 dotenv.config();
 
 const app = express();
-const ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
+
+const ORIGIN = process.env.CORS_ORIGIN || "*";
 const ALLOWED_ORIGINS = ORIGIN.split(",").map(s => s.trim());
 
-// Sugerencia: soportar múltiples orígenes separados por coma
-app.use(cors({
-  origin: "*",
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  allowedHeaders: "Content-Type,Authorization"
-}));
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true); // Permite requests como los de Swagger UI
+      if (ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes("*")) {
+        return cb(null, true);
+      }
+      return cb(new Error("CORS bloqueado"));
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
 
 app.use(express.json());
