@@ -10,24 +10,25 @@ export function swaggerDocs(app) {
     const swaggerPath = path.join(__dirname, "docs", "swagger.yaml");
     const swaggerDocument = YAML.load(swaggerPath);
 
-    // Endpoint para el JSON (Swagger UI lo usa)
+    // Sirve el JSON directamente
     app.get("/swagger.json", (req, res) => {
-        res.json(swaggerDocument);
+        res.setHeader("Content-Type", "application/json");
+        res.send(swaggerDocument);
     });
 
-    // UI de Swagger
+    // Sirve la interfaz de Swagger
     app.use(
         "/api-docs",
         swaggerUi.serve,
         swaggerUi.setup(swaggerDocument, {
             explorer: true,
             swaggerOptions: {
-                url: "/swagger.json",  // Siempre cargamos el JSON desde este endpoint
-                persistAuthorization: true,
+                url: "/swagger.json", // Usa el JSON local para evitar problemas
+                persistAuthorization: true
             },
             customSiteTitle: "KarenFlix API Docs",
         })
     );
 
-    console.log(`📄 Documentación disponible en /api-docs`);
+    console.log(`📄 Swagger disponible en /api-docs`);
 }
