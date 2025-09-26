@@ -20,17 +20,27 @@ const ALLOWED_ORIGINS = ORIGIN.split(",").map(s => s.trim());
 app.use(
   cors({
     origin: (origin, cb) => {
-      if (!origin) return cb(null, true); // Permite requests como los de Swagger UI
+      // Permite sin origen (Swagger UI local, cURL, Postman)
+      if (!origin) return cb(null, true);
+
+      // Verifica si está en la lista de orígenes permitidos
       if (ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes("*")) {
         return cb(null, true);
       }
-      return cb(new Error("CORS bloqueado"));
+
+      return cb(new Error("CORS bloqueado: " + origin));
     },
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
+    credentials: true, // Necesario para Authorization con Bearer
+    preflightContinue: false,
+    optionsSuccessStatus: 204
   })
 );
+
+// Asegura que OPTIONS funcione correctamente
+app.options("*", cors());
+
 
 
 app.use(express.json());
@@ -42,15 +52,6 @@ app.use(usersRoutes);
 app.use(categoriesRoutes);
 app.use(moviesRoutes);
 app.use(reviewsRoutes);
-
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  next();
-});
-
-
 
 
 
