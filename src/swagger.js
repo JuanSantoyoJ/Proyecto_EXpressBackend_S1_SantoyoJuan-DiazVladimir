@@ -57,3 +57,19 @@ export function swaggerDocs(app) {
 
   console.log("📄 Documentación: /api-docs  (usando CDN)");
 }
+
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    swaggerOptions: {
+      url: "/swagger.json",
+      persistAuthorization: true,
+      requestInterceptor: (req) => {
+        req.credentials = "same-origin";
+        return req;
+      }
+    },
+    customSiteTitle: "KarenFlix API Docs",
+  })
+);

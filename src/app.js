@@ -18,12 +18,11 @@ const ALLOWED_ORIGINS = ORIGIN.split(",").map(s => s.trim());
 
 // Sugerencia: soportar múltiples orígenes separados por coma
 app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin) return cb(null, true);           // permitir tools/CLI
-    return cb(null, ALLOWED_ORIGINS.includes(origin));
-  },
-  credentials: true
+  origin: "*",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: "Content-Type,Authorization"
 }));
+
 
 app.use(express.json());
 
