@@ -6,12 +6,12 @@ import app from "./app.js";
 
 const PORT = process.env.PORT || 3000;
 
-// Ruta de salud antes del listen
+// Ruta de prueba /health
 app.get("/health", (req, res) => {
     res.json({ status: "OK", message: "Servidor funcionando correctamente" });
 });
 
-// Conectamos DB y levantamos el server
+// Conectar DB y levantar servidor
 connectDB()
     .then(() => {
         app.listen(PORT, () => {

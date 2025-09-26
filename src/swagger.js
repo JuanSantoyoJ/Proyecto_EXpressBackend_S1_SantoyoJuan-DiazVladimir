@@ -10,27 +10,21 @@ export function swaggerDocs(app) {
     const swaggerPath = path.join(__dirname, "docs", "swagger.yaml");
     const swaggerDocument = YAML.load(swaggerPath);
 
-    // Servimos el JSON
+    // Endpoint para JSON
     app.get("/swagger.json", (req, res) => {
         res.json(swaggerDocument);
     });
 
-    // URL para swagger.json
-    const swaggerURL =
-        process.env.NODE_ENV === "production"
-            ? "/swagger.json"
-            : "/swagger.json";
-
-    // Swagger UI
+    // UI de Swagger
     app.use(
         "/api-docs",
         swaggerUi.serve,
         swaggerUi.setup(null, {
             swaggerOptions: {
-                url: swaggerURL,
+                url: "/swagger.json",
                 persistAuthorization: true
             },
-            customSiteTitle: "KarenFlix API Docs",
+            customSiteTitle: "KarenFlix API Docs"
         })
     );
 
