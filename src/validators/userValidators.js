@@ -26,7 +26,8 @@ export const validarCrearUsuario = [
 export const validarActualizarUsuario = [
     body("correo")
         .optional()
-        .isEmail().withMessage("El correo debe ser válido"),
+        .isEmail()
+        .withMessage("El correo debe ser válido"),
     body("nombre")
         .optional()
         .notEmpty().withMessage("El nombre no puede estar vacío"),

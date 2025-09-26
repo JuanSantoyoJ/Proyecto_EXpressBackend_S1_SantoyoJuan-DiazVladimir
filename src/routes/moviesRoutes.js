@@ -4,7 +4,8 @@ import {
   createMovieController,
   getAllMoviesController,
   updateMovieController,
-  deleteMovieController
+  deleteMovieController,
+  getMovieRankingController
 } from "../controllers/movieController.js";
 import { checkRole } from "../middlewares/roleMiddleware.js";
 import { verifyToken } from "../middlewares/authMiddleware.js";
@@ -49,5 +50,8 @@ router.delete(
   validarCampos,
   deleteMovieController
 );
+
+router.get("/movies/ranking", getMovieRankingController);
+
 
 export default router;

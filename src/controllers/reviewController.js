@@ -44,22 +44,44 @@ export async function createReviewController(req, res) {
 /* ----------------------------------
    2. Obtener reseñas por película
 ---------------------------------- */
+// ✅ Obtener reseñas de una película con promedio y likes/dislikes
 export async function getReviewsByMovieController(req, res) {
   try {
     const { peliculaId } = req.params;
     const db = getDB();
 
+    // Traer todas las reseñas de la película
     const reseñas = await db.collection("reseñas")
       .find({ peliculaId: new ObjectId(peliculaId) })
       .toArray();
 
-    res.json(reseñas);
+    if (reseñas.length === 0) {
+      return res.status(404).json({ error: "No hay reseñas para esta película" });
+    }
+
+    // Calcular promedio de calificación
+    const promedio = reseñas.reduce((acc, r) => acc + (r.calificacion || 0), 0) / reseñas.length;
+
+    // Asegurarnos de que likes/dislikes existan y contar
+    const reseñasConLikes = reseñas.map(r => ({
+      ...r,
+      likes: r.likes?.length || 0,
+      dislikes: r.dislikes?.length || 0
+    }));
+
+    // Respuesta con reseñas y estadísticas
+    res.json({
+      totalReseñas: reseñas.length,
+      promedioCalificacion: promedio.toFixed(1),
+      reseñas: reseñasConLikes
+    });
 
   } catch (error) {
     console.error("Error en getReviewsByMovieController:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
+
 
 /* ----------------------------------
    3. Actualizar reseña
@@ -123,6 +145,90 @@ export async function deleteReviewController(req, res) {
 
   } catch (error) {
     console.error("Error en deleteReviewController:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
+// 🔹 Like reseña
+export async function likeReviewController(req, res) {
+  try {
+    const { id } = req.params;
+    const usuarioId = new ObjectId(req.user.id);
+    const db = getDB();
+
+    const reseña = await db.collection("reseñas").findOne({ _id: new ObjectId(id) });
+    if (!reseña) return res.status(404).json({ error: "Reseña no encontrada" });
+
+    // Inicializar arrays si no existen
+    reseña.likes = reseña.likes || [];
+    reseña.dislikes = reseña.dislikes || [];
+
+    // Si ya tenía dislike, lo quitamos
+    reseña.dislikes = reseña.dislikes.filter(uid => uid.toString() !== usuarioId.toString());
+
+    // Si ya tenía like, quitamos el like (toggle)
+    if (reseña.likes.some(uid => uid.toString() === usuarioId.toString())) {
+      reseña.likes = reseña.likes.filter(uid => uid.toString() !== usuarioId.toString());
+    } else {
+      reseña.likes.push(usuarioId);
+    }
+
+    await db.collection("reseñas").updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { likes: reseña.likes, dislikes: reseña.dislikes } }
+    );
+
+    res.json({ message: "Like actualizado", likes: reseña.likes.length, dislikes: reseña.dislikes.length });
+  } catch (error) {
+    console.error("Error en likeReviewController:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
+// 🔹 Dislike reseña
+export async function dislikeReviewController(req, res) {
+  try {
+    const { id } = req.params;
+    const usuarioId = new ObjectId(req.user.id);
+    const db = getDB();
+
+    const reseña = await db.collection("reseñas").findOne({ _id: new ObjectId(id) });
+    if (!reseña) return res.status(404).json({ error: "Reseña no encontrada" });
+
+    reseña.likes = reseña.likes || [];
+    reseña.dislikes = reseña.dislikes || [];
+
+    // Si ya tenía like, lo quitamos
+    reseña.likes = reseña.likes.filter(uid => uid.toString() !== usuarioId.toString());
+
+    // Si ya tenía dislike, quitamos el dislike (toggle)
+    if (reseña.dislikes.some(uid => uid.toString() === usuarioId.toString())) {
+      reseña.dislikes = reseña.dislikes.filter(uid => uid.toString() !== usuarioId.toString());
+    } else {
+      reseña.dislikes.push(usuarioId);
+    }
+
+    await db.collection("reseñas").updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { likes: reseña.likes, dislikes: reseña.dislikes } }
+    );
+
+    res.json({ message: "Dislike actualizado", likes: reseña.likes.length, dislikes: reseña.dislikes.length });
+  } catch (error) {
+    console.error("Error en dislikeReviewController:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
+
+// 🔹 Obtener todas las reseñas (solo admin)
+export async function getAllReviewsController(req, res) {
+  try {
+    const db = getDB();
+    const reviews = await db.collection("reseñas").find().toArray();
+    res.json(reviews);
+  } catch (error) {
+    console.error("Error en getAllReviewsController:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }

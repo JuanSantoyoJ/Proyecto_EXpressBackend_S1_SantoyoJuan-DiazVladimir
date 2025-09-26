@@ -4,11 +4,14 @@ import {
   createReviewController,
   getReviewsByMovieController,
   updateReviewController,
-  deleteReviewController
+  deleteReviewController,
+  getAllReviewsController,
+  likeReviewController,
+  dislikeReviewController
 } from "../controllers/reviewController.js";
-import { checkRole } from "../middlewares/roleMiddleware.js";
 import { verifyToken } from "../middlewares/authMiddleware.js";
 import { validarCampos } from "../middlewares/validationMiddleware.js";
+
 
 import {
   validarCrearResena,
@@ -29,6 +32,10 @@ router.post(
 
 // ✅ Obtener reseñas de una película (público)
 router.get("/reviews/:peliculaId", getReviewsByMovieController);
+router.get("/reviews", verifyToken, getAllReviewsController);
+router.get("/reviews/movie/:peliculaId", getReviewsByMovieController);
+
+
 
 // ✅ Actualizar reseña (solo el usuario dueño de la reseña)
 router.put(
@@ -47,5 +54,8 @@ router.delete(
   validarCampos,
   deleteReviewController
 );
+
+router.post("/reviews/:id/like", verifyToken, likeReviewController);
+router.post("/reviews/:id/dislike", verifyToken, dislikeReviewController);
 
 export default router;

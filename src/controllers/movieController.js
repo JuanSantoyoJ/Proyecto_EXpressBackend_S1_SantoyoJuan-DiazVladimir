@@ -6,6 +6,13 @@ import {
   deleteMovie
 } from "../models/movieModel.js";
 
+import { getDB } from "../db.js";
+import { ObjectId } from "mongodb";
+
+/* ----------------------------------
+   1. Crear Película
+---------------------------------- */
+
 export async function createMovieController(req, res) {
   try {
     const { nombre, categoriaId, portada, descripcion } = req.body;
@@ -60,6 +67,42 @@ export async function deleteMovieController(req, res) {
       return res.status(400).json({ error: error.message });
     }
     console.error("Error en deleteMovieController:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
+export async function getMovieRankingController(req, res) {
+  try {
+    const db = getDB();
+    const peliculas = await db.collection("peliculas").find().toArray();
+
+    const ranking = [];
+
+    for (let peli of peliculas) {
+      const reseñas = await db.collection("reseñas")
+        .find({ peliculaId: new ObjectId(peli._id) })
+        .toArray();
+
+      if (reseñas.length === 0) {
+        ranking.push({ ...peli, puntaje: 0 });
+        continue;
+      }
+
+      const promedio = reseñas.reduce((acc, r) => acc + (r.calificacion || 0), 0) / reseñas.length;
+      const likes = reseñas.reduce((acc, r) => acc + (r.likes?.length || 0), 0);
+      const dislikes = reseñas.reduce((acc, r) => acc + (r.dislikes?.length || 0), 0);
+
+      const puntaje = (promedio * 2) + likes - dislikes;
+
+      ranking.push({ ...peli, puntaje, promedio, likes, dislikes });
+    }
+
+    // Ordenar de mayor a menor puntaje
+    ranking.sort((a, b) => b.puntaje - a.puntaje);
+
+    res.json(ranking);
+  } catch (error) {
+    console.error("Error en getMovieRankingController:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }

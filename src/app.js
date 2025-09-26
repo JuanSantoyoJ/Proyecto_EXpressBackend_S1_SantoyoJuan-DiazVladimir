@@ -9,10 +9,21 @@ import categoriesRoutes from "./routes/categoriesRoutes.js";
 import moviesRoutes from "./routes/moviesRoutes.js";
 import reviewsRoutes from "./routes/reviewsRoutes.js";
 
+
 dotenv.config();
 
 const app = express();
 const ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
+
+// Sugerencia: soportar múltiples orígenes separados por coma
+const ALLOWED_ORIGINS = ORIGIN.split(",").map(s => s.trim());
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);           // permitir tools/CLI
+    return cb(null, ALLOWED_ORIGINS.includes(origin));
+  },
+  credentials: true
+}));
 
 app.use(cors({ origin: ORIGIN }));
 app.use(express.json());
