@@ -63,4 +63,22 @@ app.get("/health", (req, res) => {
   }
 });
 
+app.get("/", (req, res) => {
+  res.json({ status: "OK", message: "Backend corriendo correctamente" });
+});
+
+app.get("/favicon.ico", (req, res) => res.status(204).end());
+
+// Manejo de rutas no encontradas
+app.use((req, res) => {
+  res.status(404).json({ error: "Ruta no encontrada" });
+});
+
+// Manejo de errores internos
+app.use((err, req, res, next) => {
+  console.error("Error interno:", err);
+  res.status(500).json({ error: "Error interno del servidor" });
+});
+
+
 export default app;
