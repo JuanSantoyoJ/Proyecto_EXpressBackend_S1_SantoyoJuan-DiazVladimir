@@ -4,7 +4,7 @@ import cors from "cors";
 import { swaggerDocs } from "./swagger.js";
 import { getDB } from "./db.js";
 
-// Rutas
+// Importar rutas
 import authRoutes from "./routes/authRoutes.js";
 import usersRoutes from "./routes/usersRoutes.js";
 import categoriesRoutes from "./routes/categoriesRoutes.js";
@@ -15,31 +15,47 @@ dotenv.config();
 
 const app = express();
 
-// ===== CONFIGURACIÓN DE CORS =====
-// Puedes definir en tu .env: CORS_ORIGIN=https://tusitio.com,https://otrodominio.com
+// ===============================
+// 🔹 CONFIGURACIÓN DE CORS
+// ===============================
 const ORIGIN = process.env.CORS_ORIGIN || "*";
 
-app.use(cors({
-  origin: ORIGIN === "*" ? true : ORIGIN.split(","),
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: ORIGIN === "*" ? "*" : ORIGIN.split(","),
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+  })
+);
 
-// ===== MIDDLEWARES =====
+// Necesario para manejar preflight requests (método OPTIONS)
+app.options("*", cors());
+
+// ===============================
+// 🔹 MIDDLEWARES
+// ===============================
 app.use(express.json());
 
-// ===== SWAGGER =====
+// ===============================
+// 🔹 SWAGGER
+// ===============================
 swaggerDocs(app);
 
-// ===== RUTAS =====
+// ===============================
+// 🔹 RUTAS PRINCIPALES
+// ===============================
 app.use(authRoutes);
 app.use(usersRoutes);
 app.use(categoriesRoutes);
 app.use(moviesRoutes);
 app.use(reviewsRoutes);
 
-// ===== SALUD =====
+// ===============================
+// 🔹 ENDPOINT DE SALUD
+// ===============================
 app.get("/health", (req, res) => {
   try {
     const db = getDB();
