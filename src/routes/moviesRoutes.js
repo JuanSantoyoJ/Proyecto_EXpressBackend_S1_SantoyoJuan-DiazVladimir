@@ -5,7 +5,8 @@ import {
   getAllMoviesController,
   updateMovieController,
   deleteMovieController,
-  getMovieRankingController
+  getMovieRankingController,
+  getMovieByIdController
 } from "../controllers/movieController.js";
 import { checkRole } from "../middlewares/roleMiddleware.js";
 import { verifyToken } from "../middlewares/authMiddleware.js";
@@ -52,6 +53,10 @@ router.delete(
 );
 
 router.get("/movies/ranking", getMovieRankingController);
+
+// ✅ Obtener película por ID (público)
+router.get("/movies/:id", getMovieByIdController);
+
 
 
 export default router;

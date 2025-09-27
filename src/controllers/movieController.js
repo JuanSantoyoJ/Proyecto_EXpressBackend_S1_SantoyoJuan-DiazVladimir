@@ -106,3 +106,20 @@ export async function getMovieRankingController(req, res) {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
+
+export const getMovieByIdController = async (req, res) => {
+  try {
+    const db = getDB();
+    const { id } = req.params;
+    const movie = await db.collection("movies").findOne({ _id: new ObjectId(id) });
+
+    if (!movie) {
+      return res.status(404).json({ error: "Película no encontrada" });
+    }
+
+    res.json(movie);
+  } catch (error) {
+    console.error("❌ Error obteniendo película:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
