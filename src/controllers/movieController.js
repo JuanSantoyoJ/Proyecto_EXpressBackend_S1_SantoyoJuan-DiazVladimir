@@ -111,7 +111,7 @@ export const getMovieByIdController = async (req, res) => {
   try {
     const db = getDB();
     const { id } = req.params;
-    const movie = await db.collection("movies").findOne({ _id: new ObjectId(id) });
+    const movie = await db.collection("peliculas").findOne({ _id: new ObjectId(id) });
 
     if (!movie) {
       return res.status(404).json({ error: "Película no encontrada" });
