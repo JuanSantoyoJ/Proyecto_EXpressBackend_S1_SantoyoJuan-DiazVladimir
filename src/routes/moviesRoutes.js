@@ -54,7 +54,7 @@ router.delete(
 
 router.get("/movies/ranking", getMovieRankingController);
 
-// ✅ Obtener película por ID (público)
+// ✅  Obtener película por ID (público)
 router.get("/movies/:id", getMovieByIdController);
 
 
