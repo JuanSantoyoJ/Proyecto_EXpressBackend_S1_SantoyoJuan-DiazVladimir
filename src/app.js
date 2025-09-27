@@ -4,7 +4,7 @@ import cors from "cors";
 import { swaggerDocs } from "./swagger.js";
 import { getDB } from "./db.js";
 
-// Importar rutas
+// Rutas
 import authRoutes from "./routes/authRoutes.js";
 import usersRoutes from "./routes/usersRoutes.js";
 import categoriesRoutes from "./routes/categoriesRoutes.js";
@@ -25,14 +25,12 @@ app.use(
     origin: ORIGIN === "*" ? "*" : ORIGIN.split(","),
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204
+    credentials: true
   })
 );
 
-// Necesario para manejar preflight requests (método OPTIONS)
-app.options("*", cors());
+// ✅ Express 5 maneja automáticamente los preflight requests con app.use(cors())
+// ❌ NO usamos app.options("*") ni "(.*)" porque generan error en path-to-regexp
 
 // ===============================
 // 🔹 MIDDLEWARES
