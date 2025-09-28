@@ -18,26 +18,24 @@ const app = express();
 // ===============================
 // 🔹 CONFIGURACIÓN DE CORS
 // ===============================
-const ORIGIN = (process.env.CORS_ORIGIN || "*")
-  .split(",")
-  .map(o => o.trim().replace(/\/$/, "")); // quita slash final si existe
+const ALLOWED_ORIGINS = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map(o => o.trim())
+  : ["*"];
 
-  console.log("🚀 ORIGINS permitidos:", ORIGIN);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes("*") || ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || ORIGIN.includes("*") || ORIGIN.includes(origin.replace(/\/$/, ""))) {
-        return callback(null, true);
-      }
-      return callback(new Error("No permitido por CORS: " + origin));
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true
-  })
-);
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200); // ✅ responder preflight inmediatamente
+  }
+  next();
+});
 
 
 
