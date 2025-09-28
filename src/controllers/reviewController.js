@@ -235,29 +235,36 @@ export async function getMyReviewsController(req, res) {
 
     const db = getDB();
 
-    // Buscar reseñas del usuario
-    const reseñas = await db.collection("reseñas")
-      .find({ usuarioId: new ObjectId(usuarioId) })
-      .toArray();
+    const lista = await db.collection("reseñas").aggregate([
+      { $match: { usuarioId: new ObjectId(usuarioId) } },
+      {
+        $lookup: {
+          from: "peliculas",            // colección de películas
+          localField: "peliculaId",
+          foreignField: "_id",
+          as: "pelicula"
+        }
+      },
+      { $unwind: "$pelicula" }, // aplana el array "pelicula"
+      {
+        $project: {
+          _id: "$_id",                  // id de la reseña
+          comentario: 1,
+          calificacion: 1,
+          createdAt: 1,
+          pelicula: {
+            _id: "$pelicula._id",
+            nombre: "$pelicula.nombre",
+            portada: "$pelicula.portada",
+            descripcion: "$pelicula.descripcion"
+          }
+        }
+      }
+    ]).toArray();
 
-    if (reseñas.length === 0) {
+    if (lista.length === 0) {
       return res.json({ msg: "Aún no tienes reseñas en tu lista." });
     }
-
-    // Traer info de cada película
-    const peliculasIds = reseñas.map(r => r.peliculaId);
-    const peliculas = await db.collection("peliculas")
-      .find({ _id: { $in: peliculasIds } })
-      .toArray();
-
-    // Unir reseñas con películas
-    const lista = reseñas.map(r => {
-      const pelicula = peliculas.find(p => p._id.toString() === r.peliculaId.toString());
-      return {
-        ...r,
-        pelicula: pelicula ? { nombre: pelicula.nombre, portada: pelicula.portada } : null
-      };
-    });
 
     res.json(lista);
 
@@ -266,3 +273,4 @@ export async function getMyReviewsController(req, res) {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
+
