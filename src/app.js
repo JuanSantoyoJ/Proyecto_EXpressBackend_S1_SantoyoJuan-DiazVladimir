@@ -22,6 +22,9 @@ const ORIGIN = (process.env.CORS_ORIGIN || "*")
   .split(",")
   .map(o => o.trim().replace(/\/$/, "")); // quita slash final si existe
 
+  console.log("🚀 ORIGINS permitidos:", ORIGIN);
+
+
 app.use(
   cors({
     origin: (origin, callback) => {
