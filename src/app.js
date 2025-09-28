@@ -18,16 +18,17 @@ const app = express();
 // ===============================
 // 🔹 CONFIGURACIÓN DE CORS
 // ===============================
-const ORIGIN = process.env.CORS_ORIGIN || "*";
+const ORIGIN = process.env.CORS_ORIGIN?.split(",").map(o => o.trim());
 
 app.use(
   cors({
-    origin: ORIGIN === "*" ? "*" : ORIGIN.split(","),
+    origin: ORIGIN || [], // lista de dominios permitidos
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
   })
 );
+
 
 // ✅ Express 5 maneja automáticamente los preflight requests con app.use(cors())
 // ❌ NO usamos app.options("*") ni "(.*)" porque generan error en path-to-regexp
