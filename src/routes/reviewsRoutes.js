@@ -13,7 +13,6 @@ import {
 import { verifyToken } from "../middlewares/authMiddleware.js";
 import { validarCampos } from "../middlewares/validationMiddleware.js";
 
-
 import {
   validarCrearResena,
   validarActualizarResena,
@@ -22,7 +21,7 @@ import {
 
 const router = Router();
 
-// ✅ Crear reseña (cualquier usuario autenticado)
+// ✅ Crear reseña
 router.post(
   "/reviews",
   verifyToken,
@@ -31,15 +30,16 @@ router.post(
   createReviewController
 );
 
-// ✅ Obtener reseñas de una película (público)
+// ✅ Mi lista (reseñas del usuario autenticado)
 router.get("/reviews/milist", verifyToken, getMyReviewsController);
-router.get("/reviews/:peliculaId", getReviewsByMovieController);
-router.get("/reviews", verifyToken, getAllReviewsController);
+
+// ✅ Reseñas de una película
 router.get("/reviews/movie/:peliculaId", getReviewsByMovieController);
 
+// ✅ Todas las reseñas (solo admin)
+router.get("/reviews", verifyToken, getAllReviewsController);
 
-
-// ✅ Actualizar reseña (solo el usuario dueño de la reseña)
+// ✅ Actualizar reseña
 router.put(
   "/reviews/:id",
   verifyToken,
@@ -48,7 +48,7 @@ router.put(
   updateReviewController
 );
 
-// ✅ Eliminar reseña (solo el usuario dueño de la reseña)
+// ✅ Eliminar reseña
 router.delete(
   "/reviews/:id",
   verifyToken,
@@ -57,8 +57,8 @@ router.delete(
   deleteReviewController
 );
 
+// ✅ Likes / Dislikes
 router.post("/reviews/:id/like", verifyToken, likeReviewController);
 router.post("/reviews/:id/dislike", verifyToken, dislikeReviewController);
 
 export default router;
-
