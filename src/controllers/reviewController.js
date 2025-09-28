@@ -43,6 +43,7 @@ export async function createReviewController(req, res) {
 /* ----------------------------------
    2. Obtener reseñas por película
 ---------------------------------- */
+// src/controllers/reviewController.js (solo esta función)
 export async function getReviewsByMovieController(req, res) {
   try {
     const { peliculaId } = req.params;
@@ -53,7 +54,12 @@ export async function getReviewsByMovieController(req, res) {
       .toArray();
 
     if (reseñas.length === 0) {
-      return res.status(404).json({ error: "No hay reseñas para esta película" });
+      // ✅ No 404. Responder OK con estructura vacía
+      return res.json({
+        totalReseñas: 0,
+        promedioCalificacion: "0.0",
+        reseñas: []
+      });
     }
 
     const promedio = reseñas.reduce((acc, r) => acc + (r.calificacion || 0), 0) / reseñas.length;
@@ -75,6 +81,7 @@ export async function getReviewsByMovieController(req, res) {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
+
 
 /* ----------------------------------
    3. Actualizar reseña
