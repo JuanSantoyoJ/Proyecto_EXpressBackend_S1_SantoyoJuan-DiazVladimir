@@ -6,10 +6,10 @@ import { ObjectId } from "mongodb";
 ---------------------------------- */
 export async function createReviewController(req, res) {
   try {
-    const { peliculaId, titulo, comentario, calificacion } = req.body;
+    const { peliculaId, comentario, calificacion } = req.body;
     const usuarioId = req.user?.id; // del JWT
 
-    if (!peliculaId || !titulo?.trim() || !comentario?.trim() || calificacion === undefined) {
+    if (!peliculaId || !comentario?.trim() || calificacion === undefined) {
       return res.status(400).json({ error: "Todos los campos son obligatorios" });
     }
 
@@ -25,7 +25,6 @@ export async function createReviewController(req, res) {
     const nuevaResena = {
       peliculaId: new ObjectId(peliculaId),
       usuarioId: new ObjectId(usuarioId),
-      titulo: titulo.trim(),
       comentario: comentario.trim(),
       calificacion: Number(calificacion),
       createdAt: new Date()
@@ -44,13 +43,11 @@ export async function createReviewController(req, res) {
 /* ----------------------------------
    2. Obtener reseñas por película
 ---------------------------------- */
-// ✅ Obtener reseñas de una película con promedio y likes/dislikes
 export async function getReviewsByMovieController(req, res) {
   try {
     const { peliculaId } = req.params;
     const db = getDB();
 
-    // Traer todas las reseñas de la película
     const reseñas = await db.collection("reseñas")
       .find({ peliculaId: new ObjectId(peliculaId) })
       .toArray();
@@ -59,17 +56,14 @@ export async function getReviewsByMovieController(req, res) {
       return res.status(404).json({ error: "No hay reseñas para esta película" });
     }
 
-    // Calcular promedio de calificación
     const promedio = reseñas.reduce((acc, r) => acc + (r.calificacion || 0), 0) / reseñas.length;
 
-    // Asegurarnos de que likes/dislikes existan y contar
     const reseñasConLikes = reseñas.map(r => ({
       ...r,
       likes: r.likes?.length || 0,
       dislikes: r.dislikes?.length || 0
     }));
 
-    // Respuesta con reseñas y estadísticas
     res.json({
       totalReseñas: reseñas.length,
       promedioCalificacion: promedio.toFixed(1),
@@ -82,15 +76,14 @@ export async function getReviewsByMovieController(req, res) {
   }
 }
 
-
 /* ----------------------------------
    3. Actualizar reseña
 ---------------------------------- */
 export async function updateReviewController(req, res) {
   try {
     const { id } = req.params;
-    const { titulo, comentario, calificacion } = req.body;
-    const usuarioId = req.user?.id; // del JWT
+    const { comentario, calificacion } = req.body;
+    const usuarioId = req.user?.id;
     const db = getDB();
 
     const reseña = await db.collection("reseñas").findOne({ _id: new ObjectId(id) });
@@ -103,7 +96,6 @@ export async function updateReviewController(req, res) {
     }
 
     const camposActualizar = {};
-    if (titulo) camposActualizar.titulo = titulo;
     if (comentario) camposActualizar.comentario = comentario;
     if (calificacion !== undefined) camposActualizar.calificacion = Number(calificacion);
 
@@ -126,7 +118,7 @@ export async function updateReviewController(req, res) {
 export async function deleteReviewController(req, res) {
   try {
     const { id } = req.params;
-    const usuarioId = req.user?.id; // del JWT
+    const usuarioId = req.user?.id;
     const db = getDB();
 
     const reseña = await db.collection("reseñas").findOne({ _id: new ObjectId(id) });
@@ -137,7 +129,6 @@ export async function deleteReviewController(req, res) {
     if (reseña.usuarioId.toString() !== usuarioId && req.user.rol !== "administrador") {
       return res.status(403).json({ error: "No puedes eliminar esta reseña" });
     }
-
 
     await db.collection("reseñas").deleteOne({ _id: new ObjectId(id) });
 
@@ -159,14 +150,11 @@ export async function likeReviewController(req, res) {
     const reseña = await db.collection("reseñas").findOne({ _id: new ObjectId(id) });
     if (!reseña) return res.status(404).json({ error: "Reseña no encontrada" });
 
-    // Inicializar arrays si no existen
     reseña.likes = reseña.likes || [];
     reseña.dislikes = reseña.dislikes || [];
 
-    // Si ya tenía dislike, lo quitamos
     reseña.dislikes = reseña.dislikes.filter(uid => uid.toString() !== usuarioId.toString());
 
-    // Si ya tenía like, quitamos el like (toggle)
     if (reseña.likes.some(uid => uid.toString() === usuarioId.toString())) {
       reseña.likes = reseña.likes.filter(uid => uid.toString() !== usuarioId.toString());
     } else {
@@ -198,10 +186,8 @@ export async function dislikeReviewController(req, res) {
     reseña.likes = reseña.likes || [];
     reseña.dislikes = reseña.dislikes || [];
 
-    // Si ya tenía like, lo quitamos
     reseña.likes = reseña.likes.filter(uid => uid.toString() !== usuarioId.toString());
 
-    // Si ya tenía dislike, quitamos el dislike (toggle)
     if (reseña.dislikes.some(uid => uid.toString() === usuarioId.toString())) {
       reseña.dislikes = reseña.dislikes.filter(uid => uid.toString() !== usuarioId.toString());
     } else {
@@ -219,7 +205,6 @@ export async function dislikeReviewController(req, res) {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
-
 
 // 🔹 Obtener todas las reseñas (solo admin)
 export async function getAllReviewsController(req, res) {

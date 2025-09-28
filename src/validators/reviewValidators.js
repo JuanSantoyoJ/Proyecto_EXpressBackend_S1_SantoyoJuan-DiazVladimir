@@ -7,8 +7,6 @@ export const validarCrearResena = [
   body("peliculaId")
     .notEmpty().withMessage("El ID de la película es obligatorio")
     .isMongoId().withMessage("El ID de la película debe ser válido"),
-  body("titulo")
-    .notEmpty().withMessage("El título de la reseña es obligatorio"),
   body("comentario")
     .notEmpty().withMessage("El comentario es obligatorio"),
   body("calificacion")
@@ -20,9 +18,6 @@ export const validarCrearResena = [
    Validación: Actualizar Reseña
 -------------------------------*/
 export const validarActualizarResena = [
-  body("titulo")
-    .optional()
-    .notEmpty().withMessage("El título no puede estar vacío"),
   body("comentario")
     .optional()
     .notEmpty().withMessage("El comentario no puede estar vacío"),
