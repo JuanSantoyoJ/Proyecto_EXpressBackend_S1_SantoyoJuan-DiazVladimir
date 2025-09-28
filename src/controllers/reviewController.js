@@ -224,3 +224,45 @@ export async function getAllReviewsController(req, res) {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
+
+
+export async function getMyReviewsController(req, res) {
+  try {
+    const usuarioId = req.user?.id; // viene del token
+    if (!usuarioId) {
+      return res.status(401).json({ error: "Usuario no autenticado" });
+    }
+
+    const db = getDB();
+
+    // Buscar reseñas del usuario
+    const reseñas = await db.collection("reseñas")
+      .find({ usuarioId: new ObjectId(usuarioId) })
+      .toArray();
+
+    if (reseñas.length === 0) {
+      return res.json({ msg: "Aún no tienes reseñas en tu lista." });
+    }
+
+    // Traer info de cada película
+    const peliculasIds = reseñas.map(r => r.peliculaId);
+    const peliculas = await db.collection("peliculas")
+      .find({ _id: { $in: peliculasIds } })
+      .toArray();
+
+    // Unir reseñas con películas
+    const lista = reseñas.map(r => {
+      const pelicula = peliculas.find(p => p._id.toString() === r.peliculaId.toString());
+      return {
+        ...r,
+        pelicula: pelicula ? { nombre: pelicula.nombre, portada: pelicula.portada } : null
+      };
+    });
+
+    res.json(lista);
+
+  } catch (error) {
+    console.error("❌ Error en getMyReviewsController:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+}

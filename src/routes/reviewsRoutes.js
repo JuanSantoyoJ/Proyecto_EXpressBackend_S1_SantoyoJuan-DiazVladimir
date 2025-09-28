@@ -7,7 +7,8 @@ import {
   deleteReviewController,
   getAllReviewsController,
   likeReviewController,
-  dislikeReviewController
+  dislikeReviewController,
+  getMyReviewsController
 } from "../controllers/reviewController.js";
 import { verifyToken } from "../middlewares/authMiddleware.js";
 import { validarCampos } from "../middlewares/validationMiddleware.js";
@@ -31,6 +32,7 @@ router.post(
 );
 
 // ✅ Obtener reseñas de una película (público)
+router.get("/reviews/milist", verifyToken, getMyReviewsController);
 router.get("/reviews/:peliculaId", getReviewsByMovieController);
 router.get("/reviews", verifyToken, getAllReviewsController);
 router.get("/reviews/movie/:peliculaId", getReviewsByMovieController);
@@ -59,3 +61,4 @@ router.post("/reviews/:id/like", verifyToken, likeReviewController);
 router.post("/reviews/:id/dislike", verifyToken, dislikeReviewController);
 
 export default router;
+
