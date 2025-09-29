@@ -88,3 +88,25 @@ export async function deleteCategoryController(req, res) {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
+
+// Obtener películas por categoría
+export async function getMoviesByCategoryController(req, res) {
+  try {
+    const { id } = req.params;
+    const db = getDB();
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "ID de categoría inválido" });
+    }
+
+    const movies = await db
+      .collection("peliculas")
+      .find({ categoriaId: new ObjectId(id) })
+      .toArray();
+
+    res.json(movies);
+  } catch (error) {
+    console.error("Error en getMoviesByCategoryController:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+}

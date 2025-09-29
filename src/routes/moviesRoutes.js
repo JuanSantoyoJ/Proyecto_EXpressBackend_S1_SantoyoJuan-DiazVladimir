@@ -8,6 +8,8 @@ import {
   getMovieRankingController,
   getMovieByIdController
 } from "../controllers/movieController.js";
+import { getMoviesByCategoryController } from "../controllers/categoryController.js";
+
 import { checkRole } from "../middlewares/roleMiddleware.js";
 import { verifyToken } from "../middlewares/authMiddleware.js";
 import { validarCampos } from "../middlewares/validationMiddleware.js";
@@ -31,6 +33,9 @@ router.post(
 
 // ✅ Obtener todas las películas (público)
 router.get("/movies", getAllMoviesController);
+
+// ✅ Obtener películas por categoría (público)
+router.get("/movies/category/:id", getMoviesByCategoryController);
 
 // ✅ Actualizar película (solo admin)
 router.put(
