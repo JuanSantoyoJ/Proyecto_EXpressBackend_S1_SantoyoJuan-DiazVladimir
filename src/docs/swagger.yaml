@@ -12,43 +12,22 @@ servers:
 
 tags:
   - name: Autenticación
-    description: Rutas para registro e inicio de sesión
+    description: Rutas para login
   - name: Usuarios
-    description: CRUD de usuarios (solo admin para eliminar)
+    description: CRUD de usuarios y registro público
   - name: Categorías
-    description: CRUD de categorías (solo admin)
+    description: CRUD de categorías (solo admin para crear/actualizar/eliminar)
   - name: Películas
-    description: CRUD de películas (solo admin)
+    description: CRUD de películas y endpoints especiales
   - name: Reseñas
-    description: CRUD de reseñas y likes/dislikes
+    description: CRUD de reseñas, likes/dislikes y listados personalizados
 
 paths:
-  /auth/register:
-    post:
-      tags: [Autenticación]
-      summary: Registro de usuario
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                correo: { type: string }
-                nombre: { type: string }
-                contrasena: { type: string }
-                rol:
-                  type: string
-                  enum: [usuario, administrador]
-              required: [correo, nombre, contrasena]
-      responses:
-        "201": { description: Usuario registrado con éxito }
-        "400": { description: Datos inválidos o correo duplicado }
-
   /auth/login:
     post:
       tags: [Autenticación]
       summary: Inicio de sesión
+      description: Autentica un usuario y devuelve un token JWT
       requestBody:
         required: true
         content:
@@ -56,24 +35,112 @@ paths:
             schema:
               type: object
               properties:
-                correo: { type: string }
-                contrasena: { type: string }
+                correo: 
+                  type: string
+                  format: email
+                  example: "usuario@ejemplo.com"
+                contrasena: 
+                  type: string
+                  example: "mipassword123"
               required: [correo, contrasena]
       responses:
-        "200": { description: Retorna token JWT }
-        "400": { description: Credenciales inválidas }
+        "200": 
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  message:
+                    type: string
+                    example: "Login exitoso"
+        "400": 
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Credenciales inválidas"
 
   /users:
     get:
       tags: [Usuarios]
-      summary: Obtener todos los usuarios
+      summary: Obtener todos los usuarios (solo admin)
+      description: Lista todos los usuarios registrados en el sistema
       security: [{ bearerAuth: [] }]
       responses:
-        "200": { description: Lista de usuarios }
+        "200": 
+          description: Lista de usuarios obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        "401": { description: No autorizado }
+        "403": { description: Acceso denegado - Se requiere rol de administrador }
 
     post:
       tags: [Usuarios]
-      summary: Crear usuario (admin)
+      summary: Registro público de usuario
+      description: Permite a cualquier persona registrarse como usuario (rol usuario por defecto)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                correo: 
+                  type: string
+                  format: email
+                  example: "nuevo@usuario.com"
+                nombre: 
+                  type: string
+                  example: "Juan Pérez"
+                contrasena: 
+                  type: string
+                  minLength: 6
+                  example: "password123"
+                direccion:
+                  type: string
+                  example: "Calle 123, Ciudad"
+              required: [correo, nombre, contrasena]
+      responses:
+        "201": 
+          description: Usuario registrado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Usuario creado exitosamente"
+                  user:
+                    $ref: '#/components/schemas/User'
+        "400": 
+          description: Datos inválidos o correo ya existe
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "El correo ya está registrado"
+
+  /users/admin:
+    post:
+      tags: [Usuarios]
+      summary: Crear usuario administrador (solo admin)
+      description: Permite a un administrador crear otro usuario con cualquier rol
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -82,26 +149,41 @@ paths:
             schema:
               type: object
               properties:
-                correo: { type: string }
-                nombre: { type: string }
-                contrasena: { type: string }
+                correo: 
+                  type: string
+                  format: email
+                nombre: 
+                  type: string
+                contrasena: 
+                  type: string
+                  minLength: 6
+                direccion:
+                  type: string
                 rol:
                   type: string
                   enum: [usuario, administrador]
+                  example: "administrador"
+              required: [correo, nombre, contrasena, rol]
       responses:
-        "201": { description: Usuario creado con éxito }
+        "201": { description: Usuario administrador creado con éxito }
         "400": { description: Datos inválidos }
+        "401": { description: No autorizado }
+        "403": { description: Acceso denegado - Se requiere rol de administrador }
 
   /users/{id}:
     put:
       tags: [Usuarios]
-      summary: Actualizar usuario
+      summary: Actualizar usuario (solo admin)
+      description: Permite a un administrador actualizar la información de cualquier usuario
       security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: string }
+          description: ID del usuario a actualizar
+          schema: 
+            type: string
+            example: "60f5b1234567890123456789"
       requestBody:
         required: true
         content:
@@ -109,36 +191,80 @@ paths:
             schema:
               type: object
               properties:
-                correo: { type: string }
-                nombre: { type: string }
-                direccion: { type: string }
+                correo: 
+                  type: string
+                  format: email
+                  example: "nuevo@correo.com"
+                nombre: 
+                  type: string
+                  example: "Nombre Actualizado"
+                direccion: 
+                  type: string
+                  example: "Nueva dirección 456"
       responses:
-        "200": { description: Usuario actualizado con éxito }
+        "200": 
+          description: Usuario actualizado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Usuario actualizado exitosamente"
+                  user:
+                    $ref: '#/components/schemas/User'
         "404": { description: Usuario no encontrado }
+        "401": { description: No autorizado }
+        "403": { description: Acceso denegado - Se requiere rol de administrador }
 
     delete:
       tags: [Usuarios]
-      summary: Eliminar usuario (admin)
+      summary: Eliminar usuario (solo admin)
+      description: Permite a un administrador eliminar un usuario del sistema
       security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: string }
+          description: ID del usuario a eliminar
+          schema: 
+            type: string
+            example: "60f5b1234567890123456789"
       responses:
-        "200": { description: Usuario eliminado }
+        "200": 
+          description: Usuario eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Usuario eliminado exitosamente"
         "404": { description: Usuario no encontrado }
+        "401": { description: No autorizado }
+        "403": { description: Acceso denegado - Se requiere rol de administrador }
 
   /categories:
     get:
       tags: [Categorías]
       summary: Obtener todas las categorías
+      description: Lista todas las categorías disponibles (acceso público)
       responses:
-        "200": { description: Lista de categorías }
+        "200": 
+          description: Lista de categorías obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
 
     post:
       tags: [Categorías]
-      summary: Crear categoría (admin)
+      summary: Crear categoría (solo admin)
+      description: Permite a un administrador crear una nueva categoría
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -147,21 +273,44 @@ paths:
             schema:
               type: object
               properties:
-                nombre: { type: string }
-                descripcion: { type: string }
+                nombre: 
+                  type: string
+                  example: "Acción"
+                descripcion: 
+                  type: string
+                  example: "Películas de acción y aventura"
+              required: [nombre, descripcion]
       responses:
-        "201": { description: Categoría creada con éxito }
+        "201": 
+          description: Categoría creada con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Categoría creada exitosamente"
+                  category:
+                    $ref: '#/components/schemas/Category'
+        "400": { description: Datos inválidos }
+        "401": { description: No autorizado }
+        "403": { description: Acceso denegado - Se requiere rol de administrador }
 
   /categories/{id}:
     put:
       tags: [Categorías]
-      summary: Actualizar categoría (admin)
+      summary: Actualizar categoría (solo admin)
+      description: Permite a un administrador actualizar una categoría existente
       security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: string }
+          description: ID de la categoría a actualizar
+          schema: 
+            type: string
+            example: "60f5b1234567890123456789"
       requestBody:
         required: true
         content:
@@ -169,33 +318,77 @@ paths:
             schema:
               type: object
               properties:
-                nombre: { type: string }
-                descripcion: { type: string }
+                nombre: 
+                  type: string
+                  example: "Ciencia Ficción"
+                descripcion: 
+                  type: string
+                  example: "Películas de ciencia ficción y fantasía futurista"
+              required: [nombre, descripcion]
       responses:
-        "200": { description: Categoría actualizada }
+        "200": 
+          description: Categoría actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Categoría actualizada exitosamente"
+                  category:
+                    $ref: '#/components/schemas/Category'
+        "404": { description: Categoría no encontrada }
+        "401": { description: No autorizado }
+        "403": { description: Acceso denegado - Se requiere rol de administrador }
 
     delete:
       tags: [Categorías]
-      summary: Eliminar categoría (admin)
+      summary: Eliminar categoría (solo admin)
+      description: Permite a un administrador eliminar una categoría del sistema
       security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: string }
+          description: ID de la categoría a eliminar
+          schema: 
+            type: string
+            example: "60f5b1234567890123456789"
       responses:
-        "200": { description: Categoría eliminada }
+        "200": 
+          description: Categoría eliminada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Categoría eliminada exitosamente"
+        "404": { description: Categoría no encontrada }
+        "401": { description: No autorizado }
+        "403": { description: Acceso denegado - Se requiere rol de administrador }
 
   /movies:
     get:
       tags: [Películas]
       summary: Obtener todas las películas
+      description: Lista todas las películas disponibles (acceso público)
       responses:
-        "200": { description: Lista de películas }
+        "200": 
+          description: Lista de películas obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Movie'
 
     post:
       tags: [Películas]
-      summary: Crear película (admin)
+      summary: Crear película (solo admin)
+      description: Permite a un administrador agregar una nueva película al catálogo
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -204,22 +397,70 @@ paths:
             schema:
               type: object
               properties:
-                nombre: { type: string }
-                categoriaId: { type: string }
-                portada: { type: string }
+                nombre: 
+                  type: string
+                  example: "El Señor de los Anillos"
+                categoriaId: 
+                  type: string
+                  example: "60f5b1234567890123456789"
+                  description: "ID de la categoría a la que pertenece la película"
+                portada: 
+                  type: string
+                  example: "https://ejemplo.com/imagen.jpg"
+                  description: "URL de la imagen de portada de la película"
+              required: [nombre, categoriaId, portada]
       responses:
-        "201": { description: Película creada con éxito }
+        "201": 
+          description: Película creada con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Película creada exitosamente"
+                  movie:
+                    $ref: '#/components/schemas/Movie'
+        "400": { description: Datos inválidos }
+        "401": { description: No autorizado }
+        "403": { description: Acceso denegado - Se requiere rol de administrador }
 
   /movies/{id}:
+    get:
+      tags: [Películas]
+      summary: Obtener película por ID
+      description: Obtiene los detalles de una película específica (acceso público)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID de la película
+          schema: 
+            type: string
+            example: "60f5b1234567890123456789"
+      responses:
+        "200": 
+          description: Película encontrada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+        "404": { description: Película no encontrada }
+
     put:
       tags: [Películas]
-      summary: Actualizar película (admin)
+      summary: Actualizar película (solo admin)
+      description: Permite a un administrador actualizar los detalles de una película
       security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: string }
+          description: ID de la película a actualizar
+          schema: 
+            type: string
+            example: "60f5b1234567890123456789"
       requestBody:
         required: true
         content:
@@ -227,35 +468,130 @@ paths:
             schema:
               type: object
               properties:
-                nombre: { type: string }
-                categoriaId: { type: string }
-                portada: { type: string }
+                nombre: 
+                  type: string
+                  example: "El Señor de los Anillos: Edición Extendida"
+                categoriaId: 
+                  type: string
+                  example: "60f5b1234567890123456789"
+                portada: 
+                  type: string
+                  example: "https://ejemplo.com/nueva-imagen.jpg"
       responses:
-        "200": { description: Película actualizada }
+        "200": 
+          description: Película actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Película actualizada exitosamente"
+                  movie:
+                    $ref: '#/components/schemas/Movie'
+        "404": { description: Película no encontrada }
+        "401": { description: No autorizado }
+        "403": { description: Acceso denegado - Se requiere rol de administrador }
 
     delete:
       tags: [Películas]
-      summary: Eliminar película (admin)
+      summary: Eliminar película (solo admin)
+      description: Permite a un administrador eliminar una película del catálogo
       security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: string }
+          description: ID de la película a eliminar
+          schema: 
+            type: string
+            example: "60f5b1234567890123456789"
       responses:
-        "200": { description: Película eliminada }
+        "200": 
+          description: Película eliminada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Película eliminada exitosamente"
+        "404": { description: Película no encontrada }
+        "401": { description: No autorizado }
+        "403": { description: Acceso denegado - Se requiere rol de administrador }
+
+  /movies/category/{id}:
+    get:
+      tags: [Películas]
+      summary: Obtener películas por categoría
+      description: Lista todas las películas que pertenecen a una categoría específica (acceso público)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID de la categoría
+          schema: 
+            type: string
+            example: "60f5b1234567890123456789"
+      responses:
+        "200": 
+          description: Películas de la categoría obtenidas exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Movie'
+        "404": { description: Categoría no encontrada }
+
+  /movies/ranking:
+    get:
+      tags: [Películas]
+      summary: Obtener ranking de películas
+      description: Lista las películas ordenadas por popularidad/calificación (acceso público)
+      responses:
+        "200": 
+          description: Ranking de películas obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/Movie'
+                    - type: object
+                      properties:
+                        promedio_calificacion:
+                          type: number
+                          example: 4.5
+                        total_resenas:
+                          type: integer
+                          example: 25
 
   /reviews:
     get:
       tags: [Reseñas]
-      summary: Obtener todas las reseñas (admin)
+      summary: Obtener todas las reseñas (solo admin)
+      description: Lista todas las reseñas del sistema (solo administradores)
       security: [{ bearerAuth: [] }]
       responses:
-        "200": { description: Lista de reseñas }
+        "200": 
+          description: Lista de reseñas obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+        "401": { description: No autorizado }
+        "403": { description: Acceso denegado - Se requiere rol de administrador }
 
     post:
       tags: [Reseñas]
-      summary: Crear reseña (usuario)
+      summary: Crear reseña
+      description: Permite a un usuario autenticado crear una reseña para una película
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -264,23 +600,94 @@ paths:
             schema:
               type: object
               properties:
-                peliculaId: { type: string }
-                titulo: { type: string }
-                comentario: { type: string }
-                calificacion: { type: number }
+                peliculaId: 
+                  type: string
+                  example: "60f5b1234567890123456789"
+                  description: "ID de la película a reseñar"
+                titulo: 
+                  type: string
+                  example: "Excelente película"
+                comentario: 
+                  type: string
+                  example: "Una obra maestra del cine moderno con efectos especiales increíbles."
+                calificacion: 
+                  type: number
+                  minimum: 1
+                  maximum: 5
+                  example: 4.5
+                  description: "Calificación de 1 a 5 estrellas"
+              required: [peliculaId, titulo, comentario, calificacion]
       responses:
-        "201": { description: Reseña creada con éxito }
+        "201": 
+          description: Reseña creada con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Reseña creada exitosamente"
+                  review:
+                    $ref: '#/components/schemas/Review'
+        "400": { description: Datos inválidos }
+        "401": { description: No autorizado }
+
+  /reviews/milist:
+    get:
+      tags: [Reseñas]
+      summary: Obtener mis reseñas
+      description: Lista todas las reseñas creadas por el usuario autenticado
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": 
+          description: Lista personal de reseñas obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+        "401": { description: No autorizado }
+
+  /reviews/movie/{peliculaId}:
+    get:
+      tags: [Reseñas]
+      summary: Obtener reseñas de una película
+      description: Lista todas las reseñas de una película específica (acceso público)
+      parameters:
+        - in: path
+          name: peliculaId
+          required: true
+          description: ID de la película
+          schema: 
+            type: string
+            example: "60f5b1234567890123456789"
+      responses:
+        "200": 
+          description: Reseñas de la película obtenidas exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+        "404": { description: Película no encontrada }
 
   /reviews/{id}:
     put:
       tags: [Reseñas]
-      summary: Actualizar reseña (solo autor)
+      summary: Actualizar reseña
+      description: Permite al autor de una reseña actualizarla
       security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: string }
+          description: ID de la reseña a actualizar
+          schema: 
+            type: string
+            example: "60f5b1234567890123456789"
       requestBody:
         required: true
         content:
@@ -288,49 +695,129 @@ paths:
             schema:
               type: object
               properties:
-                titulo: { type: string }
-                comentario: { type: string }
-                calificacion: { type: number }
+                titulo: 
+                  type: string
+                  example: "Película actualizada"
+                comentario: 
+                  type: string
+                  example: "Después de una segunda vista, mi opinión ha cambiado..."
+                calificacion: 
+                  type: number
+                  minimum: 1
+                  maximum: 5
+                  example: 3.5
       responses:
-        "200": { description: Reseña actualizada }
+        "200": 
+          description: Reseña actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Reseña actualizada exitosamente"
+                  review:
+                    $ref: '#/components/schemas/Review'
+        "404": { description: Reseña no encontrada }
+        "401": { description: No autorizado }
+        "403": { description: Solo el autor puede actualizar su reseña }
 
     delete:
       tags: [Reseñas]
-      summary: Eliminar reseña (autor o admin)
+      summary: Eliminar reseña
+      description: Permite al autor o a un administrador eliminar una reseña
       security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: string }
+          description: ID de la reseña a eliminar
+          schema: 
+            type: string
+            example: "60f5b1234567890123456789"
       responses:
-        "200": { description: Reseña eliminada }
+        "200": 
+          description: Reseña eliminada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Reseña eliminada exitosamente"
+        "404": { description: Reseña no encontrada }
+        "401": { description: No autorizado }
+        "403": { description: Solo el autor o un administrador pueden eliminar la reseña }
 
   /reviews/{id}/like:
     post:
       tags: [Reseñas]
       summary: Dar like a reseña
+      description: Permite a un usuario dar like a una reseña (o quitar el like si ya lo había dado)
       security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: string }
+          description: ID de la reseña
+          schema: 
+            type: string
+            example: "60f5b1234567890123456789"
       responses:
-        "200": { description: Like actualizado }
+        "200": 
+          description: Like actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Like actualizado"
+                  likes:
+                    type: integer
+                    example: 15
+                  dislikes:
+                    type: integer
+                    example: 3
+        "404": { description: Reseña no encontrada }
+        "401": { description: No autorizado }
 
   /reviews/{id}/dislike:
     post:
       tags: [Reseñas]
       summary: Dar dislike a reseña
+      description: Permite a un usuario dar dislike a una reseña (o quitar el dislike si ya lo había dado)
       security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: string }
+          description: ID de la reseña
+          schema: 
+            type: string
+            example: "60f5b1234567890123456789"
       responses:
-        "200": { description: Dislike actualizado }
+        "200": 
+          description: Dislike actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Dislike actualizado"
+                  likes:
+                    type: integer
+                    example: 15
+                  dislikes:
+                    type: integer
+                    example: 4
+        "404": { description: Reseña no encontrada }
+        "401": { description: No autorizado }
 
 components:
   securitySchemes:
@@ -338,3 +825,151 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: "Token JWT obtenido del endpoint /auth/login. Formato: Bearer {token}"
+
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "60f5b1234567890123456789"
+        correo:
+          type: string
+          format: email
+          example: "usuario@ejemplo.com"
+        nombre:
+          type: string
+          example: "Juan Pérez"
+        direccion:
+          type: string
+          example: "Calle 123, Ciudad, País"
+        rol:
+          type: string
+          enum: [usuario, administrador]
+          example: "usuario"
+        fechaCreacion:
+          type: string
+          format: date-time
+          example: "2023-12-01T10:30:00Z"
+      required: [_id, correo, nombre, rol]
+
+    Category:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "60f5b1234567890123456789"
+        nombre:
+          type: string
+          example: "Acción"
+        descripcion:
+          type: string
+          example: "Películas llenas de acción, aventura y adrenalina"
+        fechaCreacion:
+          type: string
+          format: date-time
+          example: "2023-12-01T10:30:00Z"
+      required: [_id, nombre, descripcion]
+
+    Movie:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "60f5b1234567890123456789"
+        nombre:
+          type: string
+          example: "El Señor de los Anillos: La Comunidad del Anillo"
+        categoriaId:
+          type: string
+          example: "60f5b1234567890123456789"
+        categoria:
+          $ref: '#/components/schemas/Category'
+        portada:
+          type: string
+          format: uri
+          example: "https://example.com/portada.jpg"
+        fechaCreacion:
+          type: string
+          format: date-time
+          example: "2023-12-01T10:30:00Z"
+        promedio_calificacion:
+          type: number
+          example: 4.5
+          description: "Promedio de calificaciones de las reseñas"
+        total_resenas:
+          type: integer
+          example: 25
+          description: "Número total de reseñas"
+      required: [_id, nombre, categoriaId, portada]
+
+    Review:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "60f5b1234567890123456789"
+        peliculaId:
+          type: string
+          example: "60f5b1234567890123456789"
+        pelicula:
+          $ref: '#/components/schemas/Movie'
+        usuarioId:
+          type: string
+          example: "60f5b1234567890123456789"
+        usuario:
+          $ref: '#/components/schemas/User'
+        titulo:
+          type: string
+          example: "Una obra maestra del cine"
+        comentario:
+          type: string
+          example: "Esta película es increíble, con una narrativa fascinante y efectos especiales de primera clase."
+        calificacion:
+          type: number
+          minimum: 1
+          maximum: 5
+          example: 4.5
+        likes:
+          type: array
+          items:
+            type: string
+          example: ["60f5b1234567890123456789", "60f5b9876543210987654321"]
+          description: "Array de IDs de usuarios que dieron like"
+        dislikes:
+          type: array
+          items:
+            type: string
+          example: ["60f5b5555555555555555555"]
+          description: "Array de IDs de usuarios que dieron dislike"
+        total_likes:
+          type: integer
+          example: 15
+          description: "Número total de likes"
+        total_dislikes:
+          type: integer
+          example: 3
+          description: "Número total de dislikes"
+        fechaCreacion:
+          type: string
+          format: date-time
+          example: "2023-12-01T10:30:00Z"
+        fechaActualizacion:
+          type: string
+          format: date-time
+          example: "2023-12-01T11:45:00Z"
+      required: [_id, peliculaId, usuarioId, titulo, comentario, calificacion]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Mensaje de error descriptivo"
+        message:
+          type: string
+          example: "Detalles adicionales del error"
+        status:
+          type: integer
+          example: 400
