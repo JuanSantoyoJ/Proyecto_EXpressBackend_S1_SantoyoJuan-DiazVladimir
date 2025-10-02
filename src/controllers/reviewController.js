@@ -1,5 +1,7 @@
 import { getDB } from "../db.js";
 import { ObjectId } from "mongodb";
+const fs = require("fs");
+const csv = require("csv");
 
 /* ----------------------------------
    1. Crear Reseña
@@ -61,7 +63,7 @@ export async function getReviewsByMovieController(req, res) {
         reseñas: []
       });
     }
-
+  
     const promedio = reseñas.reduce((acc, r) => acc + (r.calificacion || 0), 0) / reseñas.length;
 
     const reseñasConLikes = reseñas.map(r => ({
@@ -75,6 +77,42 @@ export async function getReviewsByMovieController(req, res) {
       promedioCalificacion: promedio.toFixed(1),
       reseñas: reseñasConLikes
     });
+
+  } catch (error) {
+    console.error("Error en getReviewsByMovieController:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+// descargar reseñas 
+// src/controllers/reviewController.js (solo esta función)
+export async function DescargarReviewsByMovieController(req, res) {
+  try {
+    const writeStream = fs.createWriteStream(".csv");
+    const { peliculaId } = req.params;
+    const db = getDB();
+
+    const reseñas = await db.collection("reseñas")
+      .find({ peliculaId: new ObjectId(peliculaId) })
+      .toArray();
+
+    if (reseñas.length === 0) {
+      // ✅ No 404. Responder OK con estructura vacía
+      return res.json({
+        totalReseñas: 0,
+        promedioCalificacion: "0.0",
+        reseñas: []
+      });
+    }
+    csv.stringify(reseñas, {
+      header: true,
+      columns: {
+        titulo: "titulo",
+        comentario: "comentario",
+        cicalificacionty: "calificacion",
+      },
+    })
+    .pipe(writeStream);  
+    
 
   } catch (error) {
     console.error("Error en getReviewsByMovieController:", error);
