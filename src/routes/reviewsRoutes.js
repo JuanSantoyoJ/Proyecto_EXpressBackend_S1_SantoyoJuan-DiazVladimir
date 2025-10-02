@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   createReviewController,
   getReviewsByMovieController,
+  DescargarReviewsByMovieController,
   updateReviewController,
   deleteReviewController,
   getAllReviewsController,
@@ -35,6 +36,10 @@ router.get("/reviews/milist", verifyToken, getMyReviewsController);
 
 // ✅ Reseñas de una película
 router.get("/reviews/movie/:peliculaId", getReviewsByMovieController);
+
+// ✅ descargar reseñas de una película
+router.get("/reviews/movie/:peliculaId", DescargarReviewsByMovieController);
+
 
 // ✅ Todas las reseñas (solo admin)
 router.get("/reviews", verifyToken, getAllReviewsController);

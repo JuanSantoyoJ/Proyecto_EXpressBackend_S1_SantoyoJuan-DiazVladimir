@@ -31,6 +31,13 @@ export async function getReviewsByMovie(peliculaId) {
 
   return await db.collection("reseñas").find({ peliculaId: new ObjectId(peliculaId) }).toArray();
 }
+// descargar reseñas
+export async function DescargarReviewsByMovie(peliculaId) {
+  const db = getDB();
+  if (!ObjectId.isValid(peliculaId)) throw new Error("ID de película inválido");
+
+  return await db.collection("reseñas").find({ peliculaId: new ObjectId(peliculaId) }).toArray();
+}
 
 // Actualizar reseña
 export async function updateReview(id, { titulo, comentario, calificacion }) {

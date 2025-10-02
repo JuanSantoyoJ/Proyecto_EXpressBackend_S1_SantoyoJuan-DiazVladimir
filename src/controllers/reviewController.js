@@ -1,7 +1,7 @@
 import { getDB } from "../db.js";
 import { ObjectId } from "mongodb";
-const fs = require("fs");
-const csv = require("csv");
+import fs from "fs";
+import csv from "csv";
 
 /* ----------------------------------
    1. Crear Reseña
@@ -87,7 +87,7 @@ export async function getReviewsByMovieController(req, res) {
 // src/controllers/reviewController.js (solo esta función)
 export async function DescargarReviewsByMovieController(req, res) {
   try {
-    const writeStream = fs.createWriteStream(".csv");
+    const writeStream = fs.createWriteStream("peli.csv");
     const { peliculaId } = req.params;
     const db = getDB();
 
