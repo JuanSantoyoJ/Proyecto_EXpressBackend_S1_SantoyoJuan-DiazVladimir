@@ -21,3 +21,7 @@ connectDB()
     .catch((err) => {
         console.error("❌ No se pudo iniciar el servidor:", err);
     });
+
+
+
+export default app;
